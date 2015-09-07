@@ -16,6 +16,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import utilities.FileTypeFilter;
+import utilities.Uploader;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -34,7 +35,8 @@ public class Main extends JFrame {
 	private JTextField txtFileName;
 	private JButton btnExit;
 	private JLabel lblImported;
-	private JTextField txtTxtmeasurements;
+	private JTextField txtMeasurements;
+	private File selectedFile;
 
 	/**
 	 * Launch the application.
@@ -83,6 +85,13 @@ public class Main extends JFrame {
 		txtFileName.setColumns(10);
 		
 		JButton btnImport = new JButton("Import");
+		btnImport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Uploader fileUploader = new Uploader(selectedFile);
+				int mesCounter = fileUploader.uploadToSQLLite();
+				txtMeasurements.setText(Integer.toString(mesCounter));
+			}
+		});
 		btnImport.setBounds(221, 43, 89, 23);
 		contentPane.add(btnImport);
 		
@@ -95,6 +104,7 @@ public class Main extends JFrame {
 				int result = fChooser.showOpenDialog(null);
 				if (result == JFileChooser.APPROVE_OPTION) {
 					txtFileName.setText(fChooser.getSelectedFile().getPath());
+					selectedFile = fChooser.getSelectedFile();
 				}
 			}
 		});
@@ -118,10 +128,10 @@ public class Main extends JFrame {
 		lblImported.setBounds(10, 77, 158, 23);
 		contentPane.add(lblImported);
 		
-		txtTxtmeasurements = new JTextField();
-		txtTxtmeasurements.setEnabled(false);
-		txtTxtmeasurements.setBounds(157, 79, 64, 20);
-		contentPane.add(txtTxtmeasurements);
-		txtTxtmeasurements.setColumns(10);
+		txtMeasurements = new JTextField();
+		txtMeasurements.setEnabled(false);
+		txtMeasurements.setBounds(157, 79, 64, 20);
+		contentPane.add(txtMeasurements);
+		txtMeasurements.setColumns(10);
 	}
 }
