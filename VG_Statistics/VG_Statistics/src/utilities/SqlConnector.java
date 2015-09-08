@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SqlConnector {
+public class SqlConnector implements AutoCloseable {
 	private Connection conn;
 	private String databaseName;
 	
@@ -37,15 +37,15 @@ public class SqlConnector {
 		return databaseName;
 	}
 	
-	public void connectToDatabase(){
+	public void connectToDatabase() throws SQLException{
 		try{
 			conn = DriverManager.getConnection("jdbc:sqlite:lib/" + databaseName,"","");
 		} catch(SQLException e){
-			System.out.println(e.getMessage());
+			throw e;
 		}
 	}
 	
-	public ResultSet executeResultSetQuery(String query){
+	public ResultSet executeResultSetQuery(String query) throws SQLException{
 		try {
 			Statement statement = conn.createStatement();
 			
@@ -53,22 +53,20 @@ public class SqlConnector {
 			return rs;
 			
 		} catch(SQLException e){
-			System.out.println(e.getMessage());
-			return null;
+			throw e;
 		}
 	}
 	
-	public int executeUpdateQuery(String query){
+	public int executeUpdateQuery(String query) throws SQLException{
 		try {
 			Statement statement = conn.createStatement();
 			return statement.executeUpdate(query);		
 		} catch(SQLException e){
-			e.printStackTrace();
-			return 0;
+			throw e;
 		}
 	}
 	
-	public boolean isConnectionOpen(){
+	public boolean isConnectionOpen() throws SQLException{
 		try {
 			if(conn.isClosed()){
 				return false;
@@ -76,16 +74,25 @@ public class SqlConnector {
 				return true;
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
+			throw e;
 		}
 	}
 	
-	public void closeConnection(){
+	public void closeConnection() throws SQLException{
 		try {
 			conn.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw e;
 		}
+	}
+
+	@Override
+	public void close() throws SQLException {
+		try {
+			closeConnection();
+		} catch (SQLException e) {
+			throw e;
+		}
+		
 	}
 }
