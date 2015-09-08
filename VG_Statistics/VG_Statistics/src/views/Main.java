@@ -44,6 +44,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JTextField;
+import javax.swing.JSpinner;
 
 public class Main extends JFrame {
 
@@ -355,6 +356,10 @@ public class Main extends JFrame {
 		JButton btnSearch = new JButton("Search");
 		btnSearch.setBounds(329, 108, 89, 23);
 		contentPane.add(btnSearch);
+		
+		JSpinner spinner = new JSpinner();
+		spinner.setBounds(417, 65, 86, 21);
+		contentPane.add(spinner);
 
 		mntmExit.addActionListener(exitAL);
 
