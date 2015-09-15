@@ -2,9 +2,9 @@ package views;
 
 import java.awt.EventQueue;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -18,11 +18,13 @@ import utilities.Uploader;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.sql.SQLException;
+
 import javax.swing.JLabel;
 
 import java.awt.Font;
 
-public class Import extends JFrame {
+public class Import extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -65,7 +67,7 @@ public class Import extends JFrame {
 			e.printStackTrace();
 		}
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 339, 185);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -82,7 +84,13 @@ public class Import extends JFrame {
 		btnImport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Uploader fileUploader = new Uploader(selectedFile);
-				int mesCounter = fileUploader.uploadToSQLLite();
+				int mesCounter = 0;
+				try {
+					mesCounter = fileUploader.uploadToSQLLite();
+				} catch (SQLException e) {
+					JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),"Error", 
+							JOptionPane.ERROR_MESSAGE);
+				}
 				txtMeasurements.setText(Integer.toString(mesCounter));
 			}
 		});
@@ -105,13 +113,10 @@ public class Import extends JFrame {
 		btnOpenFile.setBounds(10, 43, 89, 23);
 		contentPane.add(btnOpenFile);
 		
-		btnExit = new JButton("Exit");
+		btnExit = new JButton("Cancel");
 		btnExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				int answer = JOptionPane.showConfirmDialog(rootPane, "Are you sure you want to exit ?", "Quit", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-				if (answer == JOptionPane.YES_OPTION) {
-					dispose();
-				}
+				dispose();
 			}
 		});
 		btnExit.setBounds(221, 112, 89, 23);

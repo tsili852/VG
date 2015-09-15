@@ -5,9 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.sql.SQLException;
 
 public class Uploader {
 
@@ -17,12 +15,13 @@ public class Uploader {
 		selectedFile = sFile;
 	}
 	
-	public int uploadToSQLLite(){
+	public int uploadToSQLLite() throws SQLException{
 		int mesCounter = 0;
 		
 //		SimpleDateFormat sdft = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Measurement newMeas = new Measurement();
 		
+		@SuppressWarnings("resource")
 		SqlConnector propConnector = new SqlConnector("VG_db");
 		propConnector.connectToDatabase();
 		

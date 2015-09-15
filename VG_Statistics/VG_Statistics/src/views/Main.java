@@ -7,8 +7,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 import javax.swing.JFrame;
@@ -26,25 +26,23 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.*;
 
+import utilities.MyTools;
 import utilities.SqlConnector;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 
 import java.awt.Font;
+import java.io.Console;
 
 import javax.swing.JButton;
 
 import com.toedter.calendar.JDateChooser;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
-import javax.swing.JTextField;
 import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 
 public class Main extends JFrame {
 
@@ -139,7 +137,7 @@ public class Main extends JFrame {
 //		String sqlStatement = "Select * from Measurements";
 //		ResultSet result = connector.executeResultSetQuery(sqlStatement);
 			
-		JTable tblMeasurements = new JTable();
+		final JTable tblMeasurements = new JTable();
 //		tblMeasurements.setModel(MyTools.resultSetToTableModel(result));		
 		tblMeasurements.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tblMeasurements.setFillsViewportHeight(true);
@@ -174,11 +172,11 @@ public class Main extends JFrame {
 		
 		JButton btnExit = new JButton("Exit");
 		
-		btnExit.addActionListener(exitAL);
+		btnExit.addActionListener(exitAl);
 		btnExit.setBounds(329, 164, 89, 23);
 		contentPane.add(btnExit);
 		
-		JDateChooser dChooserFrom = new JDateChooser();
+		dChooserFrom = new JDateChooser();
 		dChooserFrom.setBounds(161, 52, 99, 21);
 		dChooserFrom.setDateFormatString("dd/MM/yyyy");
 		Calendar cal = new GregorianCalendar();
@@ -190,7 +188,7 @@ public class Main extends JFrame {
 		lblDateFrom.setBounds(161, 33, 99, 14);
 		contentPane.add(lblDateFrom);
 		
-		JDateChooser dChooserTo = new JDateChooser();
+		dChooserTo = new JDateChooser();
 		dChooserTo.setDateFormatString("dd/MM/yyyy");
 		
 		dChooserTo.setDate(cal.getTime());
@@ -206,9 +204,6 @@ public class Main extends JFrame {
 		lblHumidity.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		lblHumidity.setBounds(62, 109, 47, 18);
 		contentPane.add(lblHumidity);
-		
-		txtHumMin = new JTextField();
-		txtHumMin.setBounds(119, 109, 86, 20);
 		PlainDocument humMindoc = new PlainDocument();
 		humMindoc.setDocumentFilter(new DocumentFilter() {
 		    @Override
@@ -224,9 +219,6 @@ public class Main extends JFrame {
 		        fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
 		    }
 		});
-		txtHumMin.setDocument(humMindoc);
-		contentPane.add(txtHumMin);
-		txtHumMin.setColumns(10);
 		
 		JLabel lblFrom = new JLabel("Min");
 		lblFrom.setFont(new Font("Tahoma", Font.PLAIN, 12));
@@ -237,10 +229,6 @@ public class Main extends JFrame {
 		lblMax.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		lblMax.setBounds(240, 84, 33, 18);
 		contentPane.add(lblMax);
-		
-		txtHumMax = new JTextField();
-		txtHumMax.setColumns(10);
-		txtHumMax.setBounds(215, 109, 86, 20);
 		PlainDocument humMaxdoc = new PlainDocument();
 		humMaxdoc.setDocumentFilter(new DocumentFilter() {
 		    @Override
@@ -256,17 +244,11 @@ public class Main extends JFrame {
 		        fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
 		    }
 		});
-		txtHumMax.setDocument(humMaxdoc);
-		contentPane.add(txtHumMax);
 		
 		JLabel lblTemperature = new JLabel("Temperature");
 		lblTemperature.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		lblTemperature.setBounds(37, 138, 72, 18);
 		contentPane.add(lblTemperature);
-		
-		txtTempMin = new JTextField();
-		txtTempMin.setColumns(10);
-		txtTempMin.setBounds(119, 138, 86, 20);
 		PlainDocument tempMinDoc = new PlainDocument();
 		tempMinDoc.setDocumentFilter(new DocumentFilter() {
 		    @Override
@@ -282,12 +264,6 @@ public class Main extends JFrame {
 		        fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
 		    }
 		});
-		txtTempMin.setDocument(tempMinDoc);
-		contentPane.add(txtTempMin);
-		
-		txtTempMax = new JTextField();
-		txtTempMax.setColumns(10);
-		txtTempMax.setBounds(215, 138, 86, 20);
 		PlainDocument tempMaxDoc = new PlainDocument();
 		tempMaxDoc.setDocumentFilter(new DocumentFilter() {
 		    @Override
@@ -303,69 +279,99 @@ public class Main extends JFrame {
 		        fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
 		    }
 		});
-		txtTempMax.setDocument(tempMaxDoc);
-		contentPane.add(txtTempMax);
 		
 		JLabel lblPressure = new JLabel("Pressure");
 		lblPressure.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		lblPressure.setBounds(63, 165, 46, 18);
 		contentPane.add(lblPressure);
 		
-		txtPresMin = new JTextField();
-		txtPresMin.setColumns(10);
-		txtPresMin.setBounds(119, 165, 86, 20);
-		PlainDocument preMinDoc = new PlainDocument();
-		preMinDoc.setDocumentFilter(new DocumentFilter() {
-		    @Override
-		    public void insertString(FilterBypass fb, int off, String str, AttributeSet attr) 
-		        throws BadLocationException 
-		    {
-		        fb.insertString(off, str.replaceAll("\\D++", ""), attr);  // remove non-digits
-		    } 
-		    @Override
-		    public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr) 
-		        throws BadLocationException 
-		    {
-		        fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
-		    }
-		});
-		txtPresMin.setDocument(preMinDoc);
-		contentPane.add(txtPresMin);
-		
-		txtPresMax = new JTextField();
-		txtPresMax.setColumns(10);
-		txtPresMax.setBounds(215, 165, 86, 20);
-		PlainDocument preMaxDoc = new PlainDocument();
-		preMaxDoc.setDocumentFilter(new DocumentFilter() {
-		    @Override
-		    public void insertString(FilterBypass fb, int off, String str, AttributeSet attr) 
-		        throws BadLocationException 
-		    {
-		        fb.insertString(off, str.replaceAll("\\D++", ""), attr);  // remove non-digits
-		    } 
-		    @Override
-		    public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr) 
-		        throws BadLocationException 
-		    {
-		        fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
-		    }
-		});
-		txtPresMax.setDocument(preMaxDoc);
-		contentPane.add(txtPresMax);
-		
 		JButton btnSearch = new JButton("Search");
+
 		btnSearch.setBounds(329, 108, 89, 23);
 		contentPane.add(btnSearch);
 		
-		JSpinner spinner = new JSpinner();
-		spinner.setBounds(417, 65, 86, 21);
-		contentPane.add(spinner);
+		final JSpinner spnMinHum = new JSpinner();
+		spnMinHum.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
+		spnMinHum.setBounds(119, 109, 86, 20);
+		contentPane.add(spnMinHum);
+		
+		final JSpinner spnMinTemp = new JSpinner();
+		spnMinTemp.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
+		spnMinTemp.setBounds(119, 138, 86, 20);
+		contentPane.add(spnMinTemp);
+		
+		final JSpinner spnMinPres = new JSpinner();
+		spnMinPres.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
+		spnMinPres.setBounds(119, 165, 86, 20);
+		contentPane.add(spnMinPres);
+		
+		final JSpinner spnMaxPres = new JSpinner();
+		spnMaxPres.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
+		spnMaxPres.setBounds(215, 165, 86, 20);
+		contentPane.add(spnMaxPres);
+		
+		final JSpinner spnMaxTemp = new JSpinner();
+		spnMaxTemp.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
+		spnMaxTemp.setBounds(215, 138, 86, 20);
+		contentPane.add(spnMaxTemp);
+		
+		final JSpinner spnMaxHum = new JSpinner();
+		spnMaxHum.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
+		spnMaxHum.setBounds(215, 109, 86, 20);
+		contentPane.add(spnMaxHum);
 
-		mntmExit.addActionListener(exitAL);
+		mntmExit.addActionListener(exitAl);
+		mntmFromSdCard.addActionListener(importFromSDAl);
+		
+		
+		spnMinHum.setValue(0);
+		spnMaxHum.setValue(100);
+		spnMinTemp.setValue(-10);
+		spnMaxTemp.setValue(45);
+		spnMinPres.setValue(0);
+		spnMaxPres.setValue(100);
+		
+		btnImportFromSD = new JButton("Import from SD card");
+		btnImportFromSD.setBounds(460, 164, 142, 23);
+		btnImportFromSD.addActionListener(importFromSDAl);
+		contentPane.add(btnImportFromSD);
+		
+		btnSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String sqlSelectStatement = "Select * from Measurements Where ";
+				if (cmbWT.getSelectedIndex() != 0) {
+					sqlSelectStatement += "WTID = '" + String.valueOf(cmbWT.getSelectedItem()) + "' and";
+				}
 
+				String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserFrom.getDate());
+				String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
+				sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and";
+				sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and";
+				
+				sqlSelectStatement += " Hum >= " + spnMinHum.getValue() + " and ";
+				sqlSelectStatement += " Hum <= " + spnMaxHum.getValue() + " and ";
+				
+				sqlSelectStatement += " Temp >= " + spnMinTemp.getValue() + " and ";
+				sqlSelectStatement += " Temp <= " + spnMaxTemp.getValue() + " and ";
+				
+				sqlSelectStatement += " Pres >= " + spnMinPres.getValue() + " and ";
+				sqlSelectStatement += " Pres <= " + spnMaxPres.getValue();
+				
+				try {
+					ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
+					tblMeasurements.setModel(MyTools.resultSetToTableModel(result));
+				} catch (SQLException e) {
+					JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),"Error", 
+							JOptionPane.ERROR_MESSAGE);
+				}
+				
+//				JOptionPane.showMessageDialog(null, sqlSelectStatement);
+//				System.out.println(sqlSelectStatement);
+			}
+		});
 	}
 	
-	ActionListener exitAL = new ActionListener() {
+	ActionListener exitAl = new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
 			int answer = JOptionPane.showConfirmDialog(rootPane, "Are you sure you want to exit ?", "Quit", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 			if (answer == JOptionPane.YES_OPTION) {
@@ -381,12 +387,17 @@ public class Main extends JFrame {
 			}
 		}
 	};
+	
+	ActionListener importFromSDAl = new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+			Import frmImport = new Import();
+			frmImport.setModal(true);
+			frmImport.setVisible(true);
+		}
+	};
 	private JLabel lblDateFrom;
 	private JLabel lblHumidity;
-	private JTextField txtHumMin;
-	private JTextField txtHumMax;
-	private JTextField txtTempMin;
-	private JTextField txtTempMax;
-	private JTextField txtPresMin;
-	private JTextField txtPresMax;
+	private JButton btnImportFromSD;
+	private JDateChooser dChooserFrom;
+	private JDateChooser dChooserTo;
 }
