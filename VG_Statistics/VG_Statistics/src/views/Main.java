@@ -43,6 +43,7 @@ import com.toedter.calendar.JDateChooser;
 
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 
 public class Main extends JFrame {
 
@@ -177,7 +178,7 @@ public class Main extends JFrame {
 		contentPane.add(btnExit);
 		
 		dChooserFrom = new JDateChooser();
-		dChooserFrom.setBounds(161, 52, 99, 21);
+		dChooserFrom.setBounds(329, 52, 99, 21);
 		dChooserFrom.setDateFormatString("dd/MM/yyyy");
 		Calendar cal = new GregorianCalendar();
 		dChooserFrom.setDate(cal.getTime());
@@ -185,19 +186,19 @@ public class Main extends JFrame {
 		
 		lblDateFrom = new JLabel("Date From");
 		lblDateFrom.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblDateFrom.setBounds(161, 33, 99, 14);
+		lblDateFrom.setBounds(329, 33, 99, 14);
 		contentPane.add(lblDateFrom);
 		
 		dChooserTo = new JDateChooser();
 		dChooserTo.setDateFormatString("dd/MM/yyyy");
 		
 		dChooserTo.setDate(cal.getTime());
-		dChooserTo.setBounds(269, 52, 99, 21);
+		dChooserTo.setBounds(437, 52, 99, 21);
 		contentPane.add(dChooserTo);
 		
 		JLabel lblDateTo = new JLabel("Date To");
 		lblDateTo.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblDateTo.setBounds(270, 33, 99, 14);
+		lblDateTo.setBounds(438, 33, 99, 14);
 		contentPane.add(lblDateTo);
 		
 		lblHumidity = new JLabel("Humidity");
@@ -336,17 +337,66 @@ public class Main extends JFrame {
 		btnImportFromSD.addActionListener(importFromSDAl);
 		contentPane.add(btnImportFromSD);
 		
+		cmbBlades = new JComboBox<String>();
+		cmbBlades.setBounds(162, 52, 72, 21);
+		cmbBlades.addItem("All");
+		cmbBlades.addItem("1");
+		cmbBlades.addItem("2");
+		cmbBlades.addItem("3");
+		contentPane.add(cmbBlades);
+		
+		JLabel lblBlade = new JLabel("Blade");
+		lblBlade.setHorizontalAlignment(SwingConstants.CENTER);
+		lblBlade.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblBlade.setBounds(162, 32, 72, 14);
+		contentPane.add(lblBlade);
+		
+		cmbVGs = new JComboBox<String>();
+		cmbVGs.setBounds(240, 52, 72, 21);
+		String sqlMaxVG = "Select MAX(VGID) from Measurements";
+		ResultSet rsMaxVG = null;
+		try {
+			rsMaxVG = connector.executeResultSetQuery(sqlMaxVG);
+			cmbVGs.addItem("All");
+			rsMaxVG.next();
+			int maxVG = rsMaxVG.getInt(1);
+			
+			for (int i = 1; i <= maxVG; i++) {
+				cmbVGs.addItem(String.valueOf(i));
+			}
+			
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),"Error", 
+					JOptionPane.ERROR_MESSAGE);
+		}
+		contentPane.add(cmbVGs);
+		
+		JLabel lblVg = new JLabel("VG");
+		lblVg.setHorizontalAlignment(SwingConstants.CENTER);
+		lblVg.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblVg.setBounds(240, 33, 72, 14);
+		contentPane.add(lblVg);
+		
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String sqlSelectStatement = "Select * from Measurements Where ";
 				if (cmbWT.getSelectedIndex() != 0) {
-					sqlSelectStatement += "WTID = '" + String.valueOf(cmbWT.getSelectedItem()) + "' and";
+					sqlSelectStatement += " WTID = '" + String.valueOf(cmbWT.getSelectedItem()) + "' and ";
 				}
+				
+				if (cmbBlades.getSelectedIndex() != 0) {
+					sqlSelectStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
+				}
+				
+				if (cmbVGs.getSelectedIndex() != 0) {
+					sqlSelectStatement += " VGID = '" + String.valueOf(cmbVGs.getSelectedItem()) + "' and ";
+				}
+				
 
 				String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserFrom.getDate());
 				String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
-				sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and";
-				sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and";
+				sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and ";
+				sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and ";
 				
 				sqlSelectStatement += " Hum >= " + spnMinHum.getValue() + " and ";
 				sqlSelectStatement += " Hum <= " + spnMaxHum.getValue() + " and ";
@@ -400,4 +450,6 @@ public class Main extends JFrame {
 	private JButton btnImportFromSD;
 	private JDateChooser dChooserFrom;
 	private JDateChooser dChooserTo;
+	private JComboBox<String> cmbBlades;
+	private JComboBox<String> cmbVGs;
 }

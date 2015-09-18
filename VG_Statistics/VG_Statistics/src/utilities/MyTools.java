@@ -15,13 +15,12 @@ public class MyTools {
 	    int numberOfColumns = metaData.getColumnCount();
 	    Vector<String> columnNames = new Vector<String>();
 	    columnNames.add("Wind Turbine ID");
+	    columnNames.add("Blade");
+	    columnNames.add("VG ID");
 	    columnNames.add("Date and Time");
 	    columnNames.add("Humidity");
 	    columnNames.add("Temperature");
 	    columnNames.add("Pressure");
-//	    for (int column = 0; column < numberOfColumns; column++) {
-//		columnNames.addElement(metaData.getColumnLabel(column + 1));
-//	    }
 
 	    // Get all rows.
 	    Vector<Vector<Object>> rows = new Vector<Vector<Object>>();
