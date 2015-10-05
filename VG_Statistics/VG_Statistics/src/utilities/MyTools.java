@@ -30,6 +30,9 @@ public class MyTools {
 
 		for (int i = 1; i <= numberOfColumns; i++) {
 		    newRow.addElement(rs.getObject(i));
+//		    if (Integer.parseInt(rs.getString("Hum")) > 20 ) {
+//			
+//			}
 		}
 
 		rows.addElement(newRow);

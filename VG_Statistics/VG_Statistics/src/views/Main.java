@@ -35,7 +35,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 
 import java.awt.Font;
-import java.io.Console;
+import java.awt.LayoutManager;
 
 import javax.swing.JButton;
 
@@ -44,6 +44,15 @@ import com.toedter.calendar.JDateChooser;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.TitledBorder;
+
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.event.ChartChangeEvent;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.data.jdbc.JDBCCategoryDataset;
+import org.jfree.chart.*;
 
 public class Main extends JFrame {
 
@@ -377,6 +386,43 @@ public class Main extends JFrame {
 		lblVg.setBounds(240, 33, 72, 14);
 		contentPane.add(lblVg);
 		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBorder(new TitledBorder(null, "Plots", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_1.setBounds(437, 76, 165, 80);
+		contentPane.add(panel_1);
+		panel_1.setLayout(null);
+		
+		JButton btnTimeHumPlot = new JButton("Time/Humidity");
+		btnTimeHumPlot.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String query = "Select DateTime, Hum from Measurements";
+				JDBCCategoryDataset dataset = null;
+				try {
+					dataset = new JDBCCategoryDataset(connector.getConnection(), query);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				JFreeChart jChart = ChartFactory.createLineChart("Time/Humidity", "Time", "Humidity", dataset, PlotOrientation.VERTICAL, false, true, true);
+//				BarRenderer rendered = null;
+//				CategoryPlot plot = null;
+//				rendered = new BarRenderer();
+//				ChartFrame cFrame = new ChartFrame("Time/Humidity", jChart);
+//				cFrame.setVisible(true);
+//				cFrame.setSize(800,450);
+//				
+//				JButton btnCancel = new JButton("Cancel");
+//				cFrame.add(btnCancel);
+				
+				PlotFrm pFrm = new PlotFrm(jChart);
+				pFrm.setVisible(true);
+				
+			}
+		});
+		btnTimeHumPlot.setBounds(10, 21, 145, 23);
+		panel_1.add(btnTimeHumPlot);
+		
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String sqlSelectStatement = "Select * from Measurements Where ";
@@ -410,6 +456,7 @@ public class Main extends JFrame {
 				try {
 					ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
 					tblMeasurements.setModel(MyTools.resultSetToTableModel(result));
+					
 				} catch (SQLException e) {
 					JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),"Error", 
 							JOptionPane.ERROR_MESSAGE);

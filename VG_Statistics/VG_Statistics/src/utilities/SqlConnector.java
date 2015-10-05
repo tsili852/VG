@@ -37,6 +37,10 @@ public class SqlConnector implements AutoCloseable {
 		return databaseName;
 	}
 	
+	public Connection getConnection(){
+		return conn;
+	}
+	
 	public void connectToDatabase() throws SQLException{
 		try{
 			conn = DriverManager.getConnection("jdbc:sqlite:lib/" + databaseName,"","");
