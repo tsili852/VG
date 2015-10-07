@@ -42,8 +42,11 @@ import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.jdbc.JDBCCategoryDataset;
 
 import com.toedter.calendar.JDateChooser;
@@ -62,8 +65,8 @@ public class Main extends JFrame {
 
 	private JPanel panel;
 	private JScrollPane scrollPane;
-	private JComboBox<String> cmbWT;
-	private JLabel lblWindTurbineId;
+	private JComboBox<String> cmbBlades;
+	private JLabel lblBladeId;
 	private SqlConnector connector = new SqlConnector("VG_db");
 
 	public static void main(String[] args) {
@@ -171,28 +174,28 @@ public class Main extends JFrame {
 		scrollPane.setWheelScrollingEnabled(true);
 		panel.add(scrollPane);
 
-		cmbWT = new JComboBox<String>();
-		cmbWT.setBounds(10, 52, 142, 21);
+		cmbBlades = new JComboBox<String>();
+		cmbBlades.setBounds(10, 52, 142, 21);
 
-		String sqlStatement2 = "Select distinct WTID from Measurements";
-		ResultSet rsWTIDs = null;
+		String sqlStatement2 = "Select distinct Blade from Measurements";
+		ResultSet rsBlades = null;
 		try {
-			rsWTIDs = connector.executeResultSetQuery(sqlStatement2);
-			cmbWT.addItem("All IDs");
-			while (rsWTIDs.next()) {
-				cmbWT.addItem(rsWTIDs.getString(1));
+			rsBlades = connector.executeResultSetQuery(sqlStatement2);
+			cmbBlades.addItem("All Blades");
+			while (rsBlades.next()) {
+				cmbBlades.addItem(rsBlades.getString(1));
 			}
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
 
-		contentPane.add(cmbWT);
+		contentPane.add(cmbBlades);
 
-		lblWindTurbineId = new JLabel("Wind Turbine ID");
-		lblWindTurbineId.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblWindTurbineId.setBounds(10, 32, 99, 14);
-		contentPane.add(lblWindTurbineId);
+		lblBladeId = new JLabel("Blade ID");
+		lblBladeId.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblBladeId.setBounds(10, 32, 99, 14);
+		contentPane.add(lblBladeId);
 
 		JButton btnExit = new JButton("Exit");
 
@@ -201,7 +204,7 @@ public class Main extends JFrame {
 		contentPane.add(btnExit);
 
 		dChooserFrom = new JDateChooser();
-		dChooserFrom.setBounds(329, 52, 99, 21);
+		dChooserFrom.setBounds(240, 52, 99, 21);
 		dChooserFrom.setDateFormatString("dd/MM/yyyy");
 		Calendar cal = new GregorianCalendar();
 		dChooserFrom.setDate(cal.getTime());
@@ -209,19 +212,19 @@ public class Main extends JFrame {
 
 		lblDateFrom = new JLabel("Date From");
 		lblDateFrom.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblDateFrom.setBounds(329, 33, 99, 14);
+		lblDateFrom.setBounds(240, 33, 99, 14);
 		contentPane.add(lblDateFrom);
 
 		dChooserTo = new JDateChooser();
 		dChooserTo.setDateFormatString("dd/MM/yyyy");
 
 		dChooserTo.setDate(cal.getTime());
-		dChooserTo.setBounds(437, 52, 99, 21);
+		dChooserTo.setBounds(348, 52, 99, 21);
 		contentPane.add(dChooserTo);
 
 		JLabel lblDateTo = new JLabel("Date To");
 		lblDateTo.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblDateTo.setBounds(438, 33, 99, 14);
+		lblDateTo.setBounds(349, 33, 99, 14);
 		contentPane.add(lblDateTo);
 
 		lblHumidity = new JLabel("Humidity");
@@ -363,22 +366,8 @@ public class Main extends JFrame {
 		btnImportFromSD.addActionListener(importFromSDAl);
 		contentPane.add(btnImportFromSD);
 
-		cmbBlades = new JComboBox<String>();
-		cmbBlades.setBounds(162, 52, 72, 21);
-		cmbBlades.addItem("All");
-		cmbBlades.addItem("1");
-		cmbBlades.addItem("2");
-		cmbBlades.addItem("3");
-		contentPane.add(cmbBlades);
-
-		JLabel lblBlade = new JLabel("Blade");
-		lblBlade.setHorizontalAlignment(SwingConstants.CENTER);
-		lblBlade.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblBlade.setBounds(162, 32, 72, 14);
-		contentPane.add(lblBlade);
-
 		cmbVGs = new JComboBox<String>();
-		cmbVGs.setBounds(240, 52, 72, 21);
+		cmbVGs.setBounds(162, 52, 72, 21);
 		String sqlMaxVG = "Select MAX(VGID) from Measurements";
 		ResultSet rsMaxVG = null;
 		try {
@@ -400,12 +389,12 @@ public class Main extends JFrame {
 		JLabel lblVg = new JLabel("VG");
 		lblVg.setHorizontalAlignment(SwingConstants.CENTER);
 		lblVg.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblVg.setBounds(240, 33, 72, 14);
+		lblVg.setBounds(162, 33, 72, 14);
 		contentPane.add(lblVg);
 
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(null, "Plots", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(437, 76, 165, 121);
+		panel_1.setBounds(457, 32, 142, 121);
 		contentPane.add(panel_1);
 		panel_1.setLayout(null);
 
@@ -423,38 +412,38 @@ public class Main extends JFrame {
 
 				JFreeChart jChart = ChartFactory.createLineChart("Time/Humidity", "Time", "Humidity", dataset,
 						PlotOrientation.VERTICAL, false, true, true);
-				// BarRenderer rendered = null;
-				// CategoryPlot plot = null;
-				// rendered = new BarRenderer();
-				// ChartFrame cFrame = new ChartFrame("Time/Humidity", jChart);
-				// cFrame.setVisible(true);
-				// cFrame.setSize(800,450);
-				//
-				// JButton btnCancel = new JButton("Cancel");
-				// cFrame.add(btnCancel);
+				 BarRenderer rendered = null;
+				 CategoryPlot plot = null;
+				 rendered = new BarRenderer();
+				 ChartFrame cFrame = new ChartFrame("Time/Humidity", jChart);
+				 cFrame.setVisible(true);
+				 cFrame.setSize(800,450);
+				
+//				 JButton btnCancel = new JButton("Cancel");
+//				 cFrame.add(btnCancel);
 
 				PlotFrm pFrm = new PlotFrm(jChart);
 				pFrm.setVisible(true);
 
 			}
 		});
-		btnTimeHumPlot.setBounds(10, 21, 145, 23);
+		btnTimeHumPlot.setBounds(10, 21, 123, 23);
 		panel_1.add(btnTimeHumPlot);
 		
 		JButton btnTimetemperature = new JButton("Time/Temperature");
-		btnTimetemperature.setBounds(10, 52, 145, 23);
+		btnTimetemperature.setBounds(10, 52, 123, 23);
 		panel_1.add(btnTimetemperature);
 		
 		JButton btnTimepressure = new JButton("Time/Pressure");
-		btnTimepressure.setBounds(10, 86, 145, 23);
+		btnTimepressure.setBounds(10, 86, 123, 23);
 		panel_1.add(btnTimepressure);
 
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String sqlSelectStatement = "Select * from Measurements Where ";
-				if (cmbWT.getSelectedIndex() != 0) {
-					sqlSelectStatement += " WTID = '" + String.valueOf(cmbWT.getSelectedItem()) + "' and ";
-				}
+//				if (cmbBlades.getSelectedIndex() != 0) {
+//					sqlSelectStatement += " WTID = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
+//				}
 
 				if (cmbBlades.getSelectedIndex() != 0) {
 					sqlSelectStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
@@ -525,6 +514,5 @@ public class Main extends JFrame {
 	private JButton btnImportFromSD;
 	private JDateChooser dChooserFrom;
 	private JDateChooser dChooserTo;
-	private JComboBox<String> cmbBlades;
 	private JComboBox<String> cmbVGs;
 }

@@ -14,8 +14,7 @@ public class MyTools {
 	    ResultSetMetaData metaData = rs.getMetaData();
 	    int numberOfColumns = metaData.getColumnCount();
 	    Vector<String> columnNames = new Vector<String>();
-	    columnNames.add("Wind Turbine ID");
-	    columnNames.add("Blade");
+	    columnNames.add("Blade ID");
 	    columnNames.add("VG ID");
 	    columnNames.add("Date and Time");
 	    columnNames.add("Humidity");

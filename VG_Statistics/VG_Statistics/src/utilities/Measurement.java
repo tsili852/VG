@@ -3,20 +3,12 @@ package utilities;
 import java.util.Date;
 
 public class Measurement {
-	private String windTurbineID;
 	private int blade;
 	private int vgID;
 	private String mesDate;
 	private double mesHumidity;
 	private double mesTemperature;
 	private double mesPressure;
-	
-	public String getWindTurbineID() {
-		return windTurbineID;
-	}
-	public void setWindTurbineID(String windTurbineID) {
-		this.windTurbineID = windTurbineID;
-	}
 	
 	public int getBlade(){
 		return blade;
@@ -62,7 +54,6 @@ public class Measurement {
 	
 	
 	public void clearAllValues() {
-		setWindTurbineID("");
 		setBlade(0);
 		setVGID(0);
 		setMesDate(null);
