@@ -19,7 +19,7 @@ public class MyTools {
 	    columnNames.add("Date and Time");
 	    columnNames.add("Humidity");
 	    columnNames.add("Temperature");
-	    columnNames.add("Pressure");
+	    columnNames.add("Force");
 
 	    // Get all rows.
 	    Vector<Vector<Object>> rows = new Vector<Vector<Object>>();

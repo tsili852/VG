@@ -42,11 +42,11 @@ public class Uploader {
 				newMeas.setMesDate(values[1]);
 				newMeas.setMesTemperature(Double.parseDouble(values[2]));
 				newMeas.setMesHumidity(Double.parseDouble(values[3]));
-				newMeas.setMesPressure(Double.parseDouble(values[4]));
+				newMeas.setMesForce(Double.parseDouble(values[4]));
 				
-				String sqlStatement = "Insert Into Measurements (Blade, VGID, DateTime, Hum, Temp, Pres) Values "
+				String sqlStatement = "Insert Into Measurements (Blade, VGID, DateTime, Hum, Temp, Force) Values "
 						+ "('" + newMeas.getBlade() + "', '" + newMeas.getVGID()+ "', '" + newMeas.getMesDate() + "', " + newMeas.getMesHumidity() + ", " + newMeas.getMesTemperature()
-						+ ", " + newMeas.getMesPressure() + ")";
+						+ ", " + newMeas.getMesForce() + ")";
 				propConnector.executeUpdateQuery(sqlStatement);
 				mesCounter++;
 								

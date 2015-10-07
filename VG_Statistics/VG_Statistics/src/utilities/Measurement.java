@@ -1,14 +1,12 @@
 package utilities;
 
-import java.util.Date;
-
 public class Measurement {
 	private int blade;
 	private int vgID;
 	private String mesDate;
 	private double mesHumidity;
 	private double mesTemperature;
-	private double mesPressure;
+	private double mesForce;
 	
 	public int getBlade(){
 		return blade;
@@ -45,11 +43,11 @@ public class Measurement {
 		this.mesTemperature = mesTemperature;
 	}
 	
-	public double getMesPressure() {
-		return mesPressure;
+	public double getMesForce() {
+		return mesForce;
 	}
-	public void setMesPressure(double mesPressure) {
-		this.mesPressure = mesPressure;
+	public void setMesForce(double mesForce) {
+		this.mesForce = mesForce;
 	}
 	
 	
@@ -59,7 +57,7 @@ public class Measurement {
 		setMesDate(null);
 		setMesHumidity(0.0);
 		setMesTemperature(0.0);
-		setMesPressure(0.0);
+		setMesForce(0.0);
 	}
 
 }

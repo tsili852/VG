@@ -67,6 +67,12 @@ public class Main extends JFrame {
 	private JScrollPane scrollPane;
 	private JComboBox<String> cmbBlades;
 	private JLabel lblBladeId;
+	private JLabel lblDateFrom;
+	private JLabel lblHumidity;
+	private JButton btnImportFromSD;
+	private JDateChooser dChooserFrom;
+	private JDateChooser dChooserTo;
+	private JComboBox<String> cmbVGs;
 	private SqlConnector connector = new SqlConnector("VG_db");
 
 	public static void main(String[] args) {
@@ -311,10 +317,10 @@ public class Main extends JFrame {
 			}
 		});
 
-		JLabel lblPressure = new JLabel("Pressure");
-		lblPressure.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblPressure.setBounds(63, 165, 46, 18);
-		contentPane.add(lblPressure);
+		JLabel lblForce = new JLabel("Force");
+		lblForce.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblForce.setBounds(76, 165, 33, 18);
+		contentPane.add(lblForce);
 
 		JButton btnSearch = new JButton("Search");
 
@@ -331,15 +337,15 @@ public class Main extends JFrame {
 		spnMinTemp.setBounds(119, 138, 86, 20);
 		contentPane.add(spnMinTemp);
 
-		final JSpinner spnMinPres = new JSpinner();
-		spnMinPres.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
-		spnMinPres.setBounds(119, 165, 86, 20);
-		contentPane.add(spnMinPres);
+		final JSpinner spnMinForce = new JSpinner();
+		spnMinForce.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
+		spnMinForce.setBounds(119, 165, 86, 20);
+		contentPane.add(spnMinForce);
 
-		final JSpinner spnMaxPres = new JSpinner();
-		spnMaxPres.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
-		spnMaxPres.setBounds(215, 165, 86, 20);
-		contentPane.add(spnMaxPres);
+		final JSpinner spnMaxForce = new JSpinner();
+		spnMaxForce.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
+		spnMaxForce.setBounds(215, 165, 86, 20);
+		contentPane.add(spnMaxForce);
 
 		final JSpinner spnMaxTemp = new JSpinner();
 		spnMaxTemp.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
@@ -358,8 +364,8 @@ public class Main extends JFrame {
 		spnMaxHum.setValue(100);
 		spnMinTemp.setValue(-10);
 		spnMaxTemp.setValue(45);
-		spnMinPres.setValue(0);
-		spnMaxPres.setValue(100);
+		spnMinForce.setValue(0);
+		spnMaxForce.setValue(100);
 
 		btnImportFromSD = new JButton("Import from SD card");
 		btnImportFromSD.setBounds(460, 498, 142, 23);
@@ -399,44 +405,19 @@ public class Main extends JFrame {
 		panel_1.setLayout(null);
 
 		JButton btnTimeHumPlot = new JButton("Time/Humidity");
-		btnTimeHumPlot.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				String query = "Select DateTime, Hum from Measurements";
-				JDBCCategoryDataset dataset = null;
-				try {
-					dataset = new JDBCCategoryDataset(connector.getConnection(), query);
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 
-				JFreeChart jChart = ChartFactory.createLineChart("Time/Humidity", "Time", "Humidity", dataset,
-						PlotOrientation.VERTICAL, false, true, true);
-				 BarRenderer rendered = null;
-				 CategoryPlot plot = null;
-				 rendered = new BarRenderer();
-				 ChartFrame cFrame = new ChartFrame("Time/Humidity", jChart);
-				 cFrame.setVisible(true);
-				 cFrame.setSize(800,450);
-				
-//				 JButton btnCancel = new JButton("Cancel");
-//				 cFrame.add(btnCancel);
-
-				PlotFrm pFrm = new PlotFrm(jChart);
-				pFrm.setVisible(true);
-
-			}
-		});
 		btnTimeHumPlot.setBounds(10, 21, 123, 23);
 		panel_1.add(btnTimeHumPlot);
 		
 		JButton btnTimetemperature = new JButton("Time/Temperature");
+
 		btnTimetemperature.setBounds(10, 52, 123, 23);
 		panel_1.add(btnTimetemperature);
 		
-		JButton btnTimepressure = new JButton("Time/Pressure");
-		btnTimepressure.setBounds(10, 86, 123, 23);
-		panel_1.add(btnTimepressure);
+		JButton btnTimeforce = new JButton("Time/Force");
+
+		btnTimeforce.setBounds(10, 86, 123, 23);
+		panel_1.add(btnTimeforce);
 
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -464,8 +445,8 @@ public class Main extends JFrame {
 				sqlSelectStatement += " Temp >= " + spnMinTemp.getValue() + " and ";
 				sqlSelectStatement += " Temp <= " + spnMaxTemp.getValue() + " and ";
 
-				sqlSelectStatement += " Pres >= " + spnMinPres.getValue() + " and ";
-				sqlSelectStatement += " Pres <= " + spnMaxPres.getValue();
+				sqlSelectStatement += " Force >= " + spnMinForce.getValue() + " and ";
+				sqlSelectStatement += " Force <= " + spnMaxForce.getValue();
 
 				try {
 					ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
@@ -479,6 +460,40 @@ public class Main extends JFrame {
 
 				// JOptionPane.showMessageDialog(null, sqlSelectStatement);
 				// System.out.println(sqlSelectStatement);
+			}
+		});
+		
+		btnTimeHumPlot.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String query = "Select DateTime, Hum from Measurements";
+				String axisTitles = "Time/Humidity";
+				String xTitle = "Time";
+				String yTitle = "Humidity";
+				
+				showGraph(query, axisTitles, xTitle, yTitle);
+
+			}
+		});
+		
+		btnTimetemperature.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String query = "Select DateTime, Temp from Measurements";
+				String axisTitles = "Time/Temperature";
+				String xTitle = "Time";
+				String yTitle = "Temperature";
+				
+				showGraph(query, axisTitles, xTitle, yTitle);
+			}
+		});
+		
+		btnTimeforce.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String query = "Select DateTime, Force from Measurements";
+				String axisTitles = "Time/Force";
+				String xTitle = "Time";
+				String yTitle = "Force";
+				
+				showGraph(query, axisTitles, xTitle, yTitle);
 			}
 		});
 	}
@@ -509,10 +524,24 @@ public class Main extends JFrame {
 			frmImport.setVisible(true);
 		}
 	};
-	private JLabel lblDateFrom;
-	private JLabel lblHumidity;
-	private JButton btnImportFromSD;
-	private JDateChooser dChooserFrom;
-	private JDateChooser dChooserTo;
-	private JComboBox<String> cmbVGs;
+	
+	private void showGraph(String sqlStatement, String axisTitles, String xTitle, String yTitle){
+		JDBCCategoryDataset dataset = null;
+		try {
+			dataset = new JDBCCategoryDataset(connector.getConnection(), sqlStatement);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		JFreeChart jChart = ChartFactory.createLineChart(axisTitles, xTitle, yTitle, dataset,
+				PlotOrientation.VERTICAL, false, true, true);
+
+		 ChartFrame cFrame = new ChartFrame(axisTitles, jChart);
+		 cFrame.setVisible(true);
+		 cFrame.setSize(800,450);
+
+		 PlotFrm pFrm = new PlotFrm(jChart);
+		 pFrm.setVisible(true);
+	}
+
 }
