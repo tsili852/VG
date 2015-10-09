@@ -44,9 +44,7 @@ import javax.swing.text.PlainDocument;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.jdbc.JDBCCategoryDataset;
 
 import com.toedter.calendar.JDateChooser;
@@ -73,6 +71,7 @@ public class Main extends JFrame {
 	private JDateChooser dChooserFrom;
 	private JDateChooser dChooserTo;
 	private JComboBox<String> cmbVGs;
+
 	private SqlConnector connector = new SqlConnector("VG_db");
 
 	public static void main(String[] args) {
@@ -167,11 +166,7 @@ public class Main extends JFrame {
 		contentPane.add(panel);
 		panel.setLayout(null);
 
-		// String sqlStatement = "Select * from Measurements";
-		// ResultSet result = connector.executeResultSetQuery(sqlStatement);
-
 		final JTable tblMeasurements = new JTable();
-		// tblMeasurements.setModel(MyTools.resultSetToTableModel(result));
 		tblMeasurements.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tblMeasurements.setFillsViewportHeight(true);
 
@@ -327,38 +322,37 @@ public class Main extends JFrame {
 		btnSearch.setBounds(329, 108, 89, 23);
 		contentPane.add(btnSearch);
 
-		final JSpinner spnMinHum = new JSpinner();
+		spnMinHum = new JSpinner();
 		spnMinHum.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
 		spnMinHum.setBounds(119, 109, 86, 20);
 		contentPane.add(spnMinHum);
 
-		final JSpinner spnMinTemp = new JSpinner();
+		spnMinTemp = new JSpinner();
 		spnMinTemp.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
 		spnMinTemp.setBounds(119, 138, 86, 20);
 		contentPane.add(spnMinTemp);
 
-		final JSpinner spnMinForce = new JSpinner();
+		spnMinForce = new JSpinner();
 		spnMinForce.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
 		spnMinForce.setBounds(119, 165, 86, 20);
 		contentPane.add(spnMinForce);
 
-		final JSpinner spnMaxForce = new JSpinner();
+		spnMaxForce = new JSpinner();
 		spnMaxForce.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
 		spnMaxForce.setBounds(215, 165, 86, 20);
 		contentPane.add(spnMaxForce);
 
-		final JSpinner spnMaxTemp = new JSpinner();
+		spnMaxTemp = new JSpinner();
 		spnMaxTemp.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
 		spnMaxTemp.setBounds(215, 138, 86, 20);
 		contentPane.add(spnMaxTemp);
 
-		final JSpinner spnMaxHum = new JSpinner();
+		spnMaxHum = new JSpinner();
 		spnMaxHum.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(0.1)));
 		spnMaxHum.setBounds(215, 109, 86, 20);
 		contentPane.add(spnMaxHum);
 
 		mntmExit.addActionListener(exitAl);
-		mntmFromSdCard.addActionListener(importFromSDAl);
 
 		spnMinHum.setValue(0);
 		spnMaxHum.setValue(100);
@@ -369,7 +363,7 @@ public class Main extends JFrame {
 
 		btnImportFromSD = new JButton("Import from SD card");
 		btnImportFromSD.setBounds(460, 498, 142, 23);
-		btnImportFromSD.addActionListener(importFromSDAl);
+
 		contentPane.add(btnImportFromSD);
 
 		cmbVGs = new JComboBox<String>();
@@ -408,94 +402,95 @@ public class Main extends JFrame {
 
 		btnTimeHumPlot.setBounds(10, 21, 123, 23);
 		panel_1.add(btnTimeHumPlot);
-		
+
 		JButton btnTimetemperature = new JButton("Time/Temperature");
 
 		btnTimetemperature.setBounds(10, 52, 123, 23);
 		panel_1.add(btnTimetemperature);
-		
+
 		JButton btnTimeforce = new JButton("Time/Force");
 
 		btnTimeforce.setBounds(10, 86, 123, 23);
 		panel_1.add(btnTimeforce);
 
-		btnSearch.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				String sqlSelectStatement = "Select * from Measurements Where ";
-//				if (cmbBlades.getSelectedIndex() != 0) {
-//					sqlSelectStatement += " WTID = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
-//				}
+		/* All the Event Listeners */
 
-				if (cmbBlades.getSelectedIndex() != 0) {
-					sqlSelectStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
-				}
+		btnSearch.addActionListener(event -> {
+			String sqlSelectStatement = "Select * from Measurements Where ";
 
-				if (cmbVGs.getSelectedIndex() != 0) {
-					sqlSelectStatement += " VGID = '" + String.valueOf(cmbVGs.getSelectedItem()) + "' and ";
-				}
-
-				String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserFrom.getDate());
-				String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
-				sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and ";
-				sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and ";
-
-				sqlSelectStatement += " Hum >= " + spnMinHum.getValue() + " and ";
-				sqlSelectStatement += " Hum <= " + spnMaxHum.getValue() + " and ";
-
-				sqlSelectStatement += " Temp >= " + spnMinTemp.getValue() + " and ";
-				sqlSelectStatement += " Temp <= " + spnMaxTemp.getValue() + " and ";
-
-				sqlSelectStatement += " Force >= " + spnMinForce.getValue() + " and ";
-				sqlSelectStatement += " Force <= " + spnMaxForce.getValue();
-
-				try {
-					ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
-					tblMeasurements.setModel(MyTools.resultSetToTableModel(result));
-
-				} catch (SQLException e) {
-					JOptionPane.showMessageDialog(rootPane,
-							"Could not connect to database Error code: " + e.getMessage(), "Error",
-							JOptionPane.ERROR_MESSAGE);
-				}
-
-				// JOptionPane.showMessageDialog(null, sqlSelectStatement);
-				// System.out.println(sqlSelectStatement);
+			if (cmbBlades.getSelectedIndex() != 0) {
+				sqlSelectStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
 			}
-		});
-		
-		btnTimeHumPlot.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				String query = "Select DateTime, Hum from Measurements";
-				String axisTitles = "Time/Humidity";
-				String xTitle = "Time";
-				String yTitle = "Humidity";
-				
-				showGraph(query, axisTitles, xTitle, yTitle);
 
+			if (cmbVGs.getSelectedIndex() != 0) {
+				sqlSelectStatement += " VGID = '" + String.valueOf(cmbVGs.getSelectedItem()) + "' and ";
 			}
-		});
-		
-		btnTimetemperature.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String query = "Select DateTime, Temp from Measurements";
-				String axisTitles = "Time/Temperature";
-				String xTitle = "Time";
-				String yTitle = "Temperature";
-				
-				showGraph(query, axisTitles, xTitle, yTitle);
+
+			String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserFrom.getDate());
+			String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
+			sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and ";
+			sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and ";
+
+			sqlSelectStatement += " Hum >= " + spnMinHum.getValue() + " and ";
+			sqlSelectStatement += " Hum <= " + spnMaxHum.getValue() + " and ";
+
+			sqlSelectStatement += " Temp >= " + spnMinTemp.getValue() + " and ";
+			sqlSelectStatement += " Temp <= " + spnMaxTemp.getValue() + " and ";
+
+			sqlSelectStatement += " Force >= " + spnMinForce.getValue() + " and ";
+			sqlSelectStatement += " Force <= " + spnMaxForce.getValue();
+
+			try {
+				ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
+				tblMeasurements.setModel(MyTools.resultSetToTableModel(result));
+
+			} catch (SQLException e) {
+				JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),
+						"Error", JOptionPane.ERROR_MESSAGE);
 			}
+
+			// System.out.println(sqlSelectStatement);
 		});
-		
-		btnTimeforce.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String query = "Select DateTime, Force from Measurements";
-				String axisTitles = "Time/Force";
-				String xTitle = "Time";
-				String yTitle = "Force";
-				
-				showGraph(query, axisTitles, xTitle, yTitle);
-			}
+
+		btnTimeHumPlot.addActionListener(event -> {
+			String query = "Select DateTime, Hum from Measurements";
+			String axisTitles = "Time/Humidity";
+			String xTitle = "Time";
+			String yTitle = "Humidity";
+
+			showGraph(query, axisTitles, xTitle, yTitle);
 		});
+
+		btnTimetemperature.addActionListener(event -> {
+			String query = "Select DateTime, Temp from Measurements";
+			String axisTitles = "Time/Temperature";
+			String xTitle = "Time";
+			String yTitle = "Temperature";
+
+			showGraph(query, axisTitles, xTitle, yTitle);
+		});
+
+		btnTimeforce.addActionListener(event -> {
+			String query = "Select DateTime, Force from Measurements";
+			String axisTitles = "Time/Force";
+			String xTitle = "Time";
+			String yTitle = "Force";
+
+			showGraph(query, axisTitles, xTitle, yTitle);
+		});
+
+		mntmFromSdCard.addActionListener(event -> {
+			Import frmImport = new Import();
+			frmImport.setModal(true);
+			frmImport.setVisible(true);
+		});
+
+		btnImportFromSD.addActionListener(event -> {
+			Import frmImport = new Import();
+			frmImport.setModal(true);
+			frmImport.setVisible(true);
+		});
+
 	}
 
 	ActionListener exitAl = new ActionListener() {
@@ -516,16 +511,16 @@ public class Main extends JFrame {
 			}
 		}
 	};
+	private JSpinner spnMinHum;
+	private JSpinner spnMinTemp;
+	private JSpinner spnMinForce;
+	private JSpinner spnMaxForce;
+	private JSpinner spnMaxTemp;
+	private JSpinner spnMaxHum;
 
-	ActionListener importFromSDAl = new ActionListener() {
-		public void actionPerformed(ActionEvent arg0) {
-			Import frmImport = new Import();
-			frmImport.setModal(true);
-			frmImport.setVisible(true);
-		}
-	};
-	
-	private void showGraph(String sqlStatement, String axisTitles, String xTitle, String yTitle){
+	/* Other methods */
+
+	private void showGraph(String sqlStatement, String axisTitles, String xTitle, String yTitle) {
 		JDBCCategoryDataset dataset = null;
 		try {
 			dataset = new JDBCCategoryDataset(connector.getConnection(), sqlStatement);
@@ -533,15 +528,43 @@ public class Main extends JFrame {
 			e.printStackTrace();
 		}
 
-		JFreeChart jChart = ChartFactory.createLineChart(axisTitles, xTitle, yTitle, dataset,
-				PlotOrientation.VERTICAL, false, true, true);
+		JFreeChart jChart = ChartFactory.createLineChart(axisTitles, xTitle, yTitle, dataset, PlotOrientation.VERTICAL,
+				false, true, true);
 
-		 ChartFrame cFrame = new ChartFrame(axisTitles, jChart);
-		 cFrame.setVisible(true);
-		 cFrame.setSize(800,450);
+		ChartFrame cFrame = new ChartFrame(axisTitles, jChart);
+		cFrame.setVisible(true);
+		cFrame.setSize(800, 450);
 
-		 PlotFrm pFrm = new PlotFrm(jChart);
-		 pFrm.setVisible(true);
+		PlotFrm pFrm = new PlotFrm(jChart);
+		pFrm.setVisible(true);
+	}
+
+	private String getSQLFromFrame() {
+		String sqlStatement = null;
+		
+		if (cmbBlades.getSelectedIndex() != 0) {
+			sqlStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
+		}
+
+		if (cmbVGs.getSelectedIndex() != 0) {
+			sqlStatement += " VGID = '" + String.valueOf(cmbVGs.getSelectedItem()) + "' and ";
+		}
+
+		String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserFrom.getDate());
+		String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
+		sqlStatement += " DateTime >= '" + sqlDateFrom + "' and ";
+		sqlStatement += " DateTime <= '" + sqlDateTo + "' and ";
+
+		sqlStatement += " Hum >= " + spnMinHum.getValue() + " and ";
+		sqlStatement += " Hum <= " + spnMaxHum.getValue() + " and ";
+
+		sqlStatement += " Temp >= " + spnMinTemp.getValue() + " and ";
+		sqlStatement += " Temp <= " + spnMaxTemp.getValue() + " and ";
+
+		sqlStatement += " Force >= " + spnMinForce.getValue() + " and ";
+		sqlStatement += " Force <= " + spnMaxForce.getValue();
+		
+		return sqlStatement;	
 	}
 
 }
