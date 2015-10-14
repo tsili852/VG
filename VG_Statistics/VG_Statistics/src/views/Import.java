@@ -81,44 +81,16 @@ public class Import extends JDialog {
 		txtFileName.setColumns(10);
 		
 		JButton btnImport = new JButton("Import");
-		btnImport.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				Uploader fileUploader = new Uploader(selectedFile);
-				int mesCounter = 0;
-				try {
-					mesCounter = fileUploader.uploadToSQLLite();
-				} catch (SQLException e) {
-					JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),"Error", 
-							JOptionPane.ERROR_MESSAGE);
-				}
-				txtMeasurements.setText(Integer.toString(mesCounter));
-			}
-		});
 		btnImport.setBounds(221, 43, 89, 23);
 		contentPane.add(btnImport);
 		
 		JButton btnOpenFile = new JButton("Open File");
-		btnOpenFile.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				JFileChooser fChooser =  new JFileChooser(new File("\\"));
-				fChooser.setDialogTitle("Open a File");
-				fChooser.setFileFilter(new FileTypeFilter("txt","Text File"));
-				int result = fChooser.showOpenDialog(null);
-				if (result == JFileChooser.APPROVE_OPTION) {
-					txtFileName.setText(fChooser.getSelectedFile().getPath());
-					selectedFile = fChooser.getSelectedFile();
-				}
-			}
-		});
+
 		btnOpenFile.setBounds(10, 43, 89, 23);
 		contentPane.add(btnOpenFile);
 		
 		btnExit = new JButton("Cancel");
-		btnExit.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				dispose();
-			}
-		});
+		btnExit.addActionListener(event -> dispose());
 		btnExit.setBounds(221, 112, 89, 23);
 		contentPane.add(btnExit);
 		
@@ -132,5 +104,28 @@ public class Import extends JDialog {
 		txtMeasurements.setBounds(157, 79, 64, 20);
 		contentPane.add(txtMeasurements);
 		txtMeasurements.setColumns(10);
+		
+		btnImport.addActionListener(event -> {
+			Uploader fileUploader = new Uploader(selectedFile);
+			int mesCounter = 0;
+			try {
+				mesCounter = fileUploader.uploadToSQLLite();
+			} catch (SQLException e) {
+				JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),"Error", 
+						JOptionPane.ERROR_MESSAGE);
+			}
+			txtMeasurements.setText(Integer.toString(mesCounter));
+		});
+		
+		btnOpenFile.addActionListener(event -> {
+			JFileChooser fChooser =  new JFileChooser(new File("\\"));
+			fChooser.setDialogTitle("Open a File");
+			fChooser.setFileFilter(new FileTypeFilter("txt","Text File"));
+			int result = fChooser.showOpenDialog(null);
+			if (result == JFileChooser.APPROVE_OPTION) {
+				txtFileName.setText(fChooser.getSelectedFile().getPath());
+				selectedFile = fChooser.getSelectedFile();
+			}
+		});
 	}
 }

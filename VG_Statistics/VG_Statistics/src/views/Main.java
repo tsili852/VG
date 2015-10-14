@@ -60,7 +60,6 @@ public class Main extends JFrame {
 	private JMenu mnImport;
 	private JMenu mnImport_1;
 	private JMenuItem mntmExit;
-
 	private JPanel panel;
 	private JScrollPane scrollPane;
 	private JComboBox<String> cmbBlades;
@@ -416,29 +415,29 @@ public class Main extends JFrame {
 		/* All the Event Listeners */
 
 		btnSearch.addActionListener(event -> {
-			String sqlSelectStatement = "Select * from Measurements Where ";
+			String sqlSelectStatement = "Select * from Measurements Where " + getSQLFromFrame();
 
-			if (cmbBlades.getSelectedIndex() != 0) {
-				sqlSelectStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
-			}
-
-			if (cmbVGs.getSelectedIndex() != 0) {
-				sqlSelectStatement += " VGID = '" + String.valueOf(cmbVGs.getSelectedItem()) + "' and ";
-			}
-
-			String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserFrom.getDate());
-			String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
-			sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and ";
-			sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and ";
-
-			sqlSelectStatement += " Hum >= " + spnMinHum.getValue() + " and ";
-			sqlSelectStatement += " Hum <= " + spnMaxHum.getValue() + " and ";
-
-			sqlSelectStatement += " Temp >= " + spnMinTemp.getValue() + " and ";
-			sqlSelectStatement += " Temp <= " + spnMaxTemp.getValue() + " and ";
-
-			sqlSelectStatement += " Force >= " + spnMinForce.getValue() + " and ";
-			sqlSelectStatement += " Force <= " + spnMaxForce.getValue();
+//			if (cmbBlades.getSelectedIndex() != 0) {
+//				sqlSelectStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
+//			}
+//
+//			if (cmbVGs.getSelectedIndex() != 0) {
+//				sqlSelectStatement += " VGID = '" + String.valueOf(cmbVGs.getSelectedItem()) + "' and ";
+//			}
+//
+//			String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserFrom.getDate());
+//			String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
+//			sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and ";
+//			sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and ";
+//
+//			sqlSelectStatement += " Hum >= " + spnMinHum.getValue() + " and ";
+//			sqlSelectStatement += " Hum <= " + spnMaxHum.getValue() + " and ";
+//
+//			sqlSelectStatement += " Temp >= " + spnMinTemp.getValue() + " and ";
+//			sqlSelectStatement += " Temp <= " + spnMaxTemp.getValue() + " and ";
+//
+//			sqlSelectStatement += " Force >= " + spnMinForce.getValue() + " and ";
+//			sqlSelectStatement += " Force <= " + spnMaxForce.getValue();
 
 			try {
 				ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
@@ -462,7 +461,7 @@ public class Main extends JFrame {
 		});
 
 		btnTimetemperature.addActionListener(event -> {
-			String query = "Select DateTime, Temp from Measurements";
+			String query = "Select Time(DateTime), Temp from Measurements";
 			String axisTitles = "Time/Temperature";
 			String xTitle = "Time";
 			String yTitle = "Temperature";
@@ -471,7 +470,7 @@ public class Main extends JFrame {
 		});
 
 		btnTimeforce.addActionListener(event -> {
-			String query = "Select DateTime, Force from Measurements";
+			String query = "Select Time(DateTime), Force from Measurements Where" + getSQLFromFrame();
 			String axisTitles = "Time/Force";
 			String xTitle = "Time";
 			String yTitle = "Force";
@@ -486,9 +485,21 @@ public class Main extends JFrame {
 		});
 
 		btnImportFromSD.addActionListener(event -> {
+			try {
+				connector.closeConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			Import frmImport = new Import();
 			frmImport.setModal(true);
 			frmImport.setVisible(true);
+			
+			try {
+				connector.connectToDatabase();
+			} catch (SQLException e1) {
+				JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e1.getMessage(),
+						"Error", JOptionPane.ERROR_MESSAGE);
+			}
 		});
 
 	}
@@ -535,12 +546,12 @@ public class Main extends JFrame {
 		cFrame.setVisible(true);
 		cFrame.setSize(800, 450);
 
-		PlotFrm pFrm = new PlotFrm(jChart);
-		pFrm.setVisible(true);
+//		PlotFrm pFrm = new PlotFrm(jChart);
+//		pFrm.setVisible(true);
 	}
 
 	private String getSQLFromFrame() {
-		String sqlStatement = null;
+		String sqlStatement = "";
 		
 		if (cmbBlades.getSelectedIndex() != 0) {
 			sqlStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";

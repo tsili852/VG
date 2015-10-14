@@ -49,14 +49,6 @@ public class Uploader {
 						+ ", " + newMeas.getMesForce() + ")";
 				propConnector.executeUpdateQuery(sqlStatement);
 				mesCounter++;
-								
-//				String TurbineID = values[0];
-//				Date mDate = sdft.parse(values[1]);
-//				double mHumidity = Double.parseDouble(values[2]);
-//				double mTemperature = Double.parseDouble(values[3]);
-//				double mPressure = Double.parseDouble(values[4]);
-				
-//				System.out.printf("ID: %s, Date: %s, Temperature: %f, Humidity: %f, Pressure: %f", TurbineID, mDate, mHumidity, mTemperature, mPressure);
 				
 			}
 			
