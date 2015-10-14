@@ -51,6 +51,10 @@ import com.toedter.calendar.JDateChooser;
 
 import utilities.MyTools;
 import utilities.SqlConnector;
+import java.awt.event.WindowStateListener;
+import java.awt.GridLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class Main extends JFrame {
 
@@ -61,7 +65,6 @@ public class Main extends JFrame {
 	private JMenu mnImport_1;
 	private JMenuItem mntmExit;
 	private JPanel panel;
-	private JScrollPane scrollPane;
 	private JComboBox<String> cmbBlades;
 	private JLabel lblBladeId;
 	private JLabel lblDateFrom;
@@ -88,7 +91,7 @@ public class Main extends JFrame {
 
 	public Main() {
 		setTitle("VG Measurements");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		createComponentsAndEvents();
 	}
 
@@ -112,6 +115,22 @@ public class Main extends JFrame {
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
+
+		addWindowStateListener(new WindowStateListener() {
+			public void windowStateChanged(WindowEvent arg0) {
+				int parentsHeight = getHeight();
+				panel.setSize(panel.getWidth(), parentsHeight - 252);
+			}
+		});
+		
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent arg0) {
+				int parentsHeight = getHeight();
+				panel.setSize(panel.getWidth(), parentsHeight - 252);
+				menuBar.setSize(getWidth(), menuBar.getHeight());
+			}
+		});
 
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent ev) {
@@ -138,7 +157,7 @@ public class Main extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
-		JMenuBar menuBar = new JMenuBar();
+		menuBar = new JMenuBar();
 		menuBar.setBounds(0, 0, 612, 21);
 		contentPane.add(menuBar);
 
@@ -160,19 +179,16 @@ public class Main extends JFrame {
 		mnImport.add(mntmExit);
 
 		panel = new JPanel();
-		panel.setBounds(10, 208, 592, 279);
-		panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel.setBounds(10, 208, 592, 312);
+		panel.setBorder(null);
 		contentPane.add(panel);
-		panel.setLayout(null);
-
-		final JTable tblMeasurements = new JTable();
-		tblMeasurements.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		tblMeasurements.setFillsViewportHeight(true);
-
-		scrollPane = new JScrollPane(tblMeasurements);
-		scrollPane.setBounds(0, 0, 592, 279);
-		scrollPane.setWheelScrollingEnabled(true);
+		panel.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		JScrollPane scrollPane = new JScrollPane();
 		panel.add(scrollPane);
+		
+		tblMeasurements = new JTable();
+		scrollPane.setViewportView(tblMeasurements);
 
 		cmbBlades = new JComboBox<String>();
 		cmbBlades.setBounds(10, 52, 142, 21);
@@ -361,7 +377,7 @@ public class Main extends JFrame {
 		spnMaxForce.setValue(100);
 
 		btnImportFromSD = new JButton("Import from SD card");
-		btnImportFromSD.setBounds(460, 498, 142, 23);
+		btnImportFromSD.setBounds(457, 164, 142, 23);
 
 		contentPane.add(btnImportFromSD);
 
@@ -417,27 +433,36 @@ public class Main extends JFrame {
 		btnSearch.addActionListener(event -> {
 			String sqlSelectStatement = "Select * from Measurements Where " + getSQLFromFrame();
 
-//			if (cmbBlades.getSelectedIndex() != 0) {
-//				sqlSelectStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
-//			}
-//
-//			if (cmbVGs.getSelectedIndex() != 0) {
-//				sqlSelectStatement += " VGID = '" + String.valueOf(cmbVGs.getSelectedItem()) + "' and ";
-//			}
-//
-//			String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserFrom.getDate());
-//			String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
-//			sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and ";
-//			sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and ";
-//
-//			sqlSelectStatement += " Hum >= " + spnMinHum.getValue() + " and ";
-//			sqlSelectStatement += " Hum <= " + spnMaxHum.getValue() + " and ";
-//
-//			sqlSelectStatement += " Temp >= " + spnMinTemp.getValue() + " and ";
-//			sqlSelectStatement += " Temp <= " + spnMaxTemp.getValue() + " and ";
-//
-//			sqlSelectStatement += " Force >= " + spnMinForce.getValue() + " and ";
-//			sqlSelectStatement += " Force <= " + spnMaxForce.getValue();
+			// if (cmbBlades.getSelectedIndex() != 0) {
+			// sqlSelectStatement += " Blade = '" +
+			// String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
+			// }
+			//
+			// if (cmbVGs.getSelectedIndex() != 0) {
+			// sqlSelectStatement += " VGID = '" +
+			// String.valueOf(cmbVGs.getSelectedItem()) + "' and ";
+			// }
+			//
+			// String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd
+			// HH:mm:ss").format(dChooserFrom.getDate());
+			// String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd
+			// HH:mm:ss").format(dChooserTo.getDate());
+			// sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and ";
+			// sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and ";
+			//
+			// sqlSelectStatement += " Hum >= " + spnMinHum.getValue() + " and
+			// ";
+			// sqlSelectStatement += " Hum <= " + spnMaxHum.getValue() + " and
+			// ";
+			//
+			// sqlSelectStatement += " Temp >= " + spnMinTemp.getValue() + " and
+			// ";
+			// sqlSelectStatement += " Temp <= " + spnMaxTemp.getValue() + " and
+			// ";
+			//
+			// sqlSelectStatement += " Force >= " + spnMinForce.getValue() + "
+			// and ";
+			// sqlSelectStatement += " Force <= " + spnMaxForce.getValue();
 
 			try {
 				ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
@@ -493,7 +518,7 @@ public class Main extends JFrame {
 			Import frmImport = new Import();
 			frmImport.setModal(true);
 			frmImport.setVisible(true);
-			
+
 			try {
 				connector.connectToDatabase();
 			} catch (SQLException e1) {
@@ -528,6 +553,8 @@ public class Main extends JFrame {
 	private JSpinner spnMaxForce;
 	private JSpinner spnMaxTemp;
 	private JSpinner spnMaxHum;
+	private JTable tblMeasurements;
+	private JMenuBar menuBar;
 
 	/* Other methods */
 
@@ -546,13 +573,13 @@ public class Main extends JFrame {
 		cFrame.setVisible(true);
 		cFrame.setSize(800, 450);
 
-//		PlotFrm pFrm = new PlotFrm(jChart);
-//		pFrm.setVisible(true);
+		// PlotFrm pFrm = new PlotFrm(jChart);
+		// pFrm.setVisible(true);
 	}
 
 	private String getSQLFromFrame() {
 		String sqlStatement = "";
-		
+
 		if (cmbBlades.getSelectedIndex() != 0) {
 			sqlStatement += " Blade = '" + String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
 		}
@@ -574,8 +601,7 @@ public class Main extends JFrame {
 
 		sqlStatement += " Force >= " + spnMinForce.getValue() + " and ";
 		sqlStatement += " Force <= " + spnMaxForce.getValue();
-		
-		return sqlStatement;	
-	}
 
+		return sqlStatement;
+	}
 }
