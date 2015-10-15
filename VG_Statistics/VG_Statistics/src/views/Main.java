@@ -2,12 +2,17 @@ package views;
 
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -28,13 +33,11 @@ import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -51,10 +54,6 @@ import com.toedter.calendar.JDateChooser;
 
 import utilities.MyTools;
 import utilities.SqlConnector;
-import java.awt.event.WindowStateListener;
-import java.awt.GridLayout;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 public class Main extends JFrame {
 
@@ -97,6 +96,26 @@ public class Main extends JFrame {
 
 	private void createComponentsAndEvents() {
 
+		String userHome = System.getProperty("user.home");
+		String outputFolder = userHome + File.separator + "VG Statistics";
+		File folder = new File(outputFolder);
+		if (!folder.exists()) {
+			int answer = JOptionPane.showConfirmDialog(rootPane,
+					"This is the first time you are running the application." + "\nDo you want to create the database?",
+					"Initial Setup", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (answer == JOptionPane.YES_OPTION) {
+				folder.mkdir();
+				try {
+					connector.connectToDatabase();
+					initialDatabaseSetup();
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e1.getMessage(),
+							"Error", JOptionPane.ERROR_MESSAGE);
+				}
+				
+			}
+		}
+		
 		try {
 			connector.connectToDatabase();
 		} catch (SQLException e1) {
@@ -122,7 +141,7 @@ public class Main extends JFrame {
 				panel.setSize(panel.getWidth(), parentsHeight - 252);
 			}
 		});
-		
+
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent arg0) {
@@ -145,8 +164,8 @@ public class Main extends JFrame {
 						JOptionPane.showMessageDialog(rootPane,
 								"Could not connect to database Error code: " + e.getMessage(), "Error",
 								JOptionPane.ERROR_MESSAGE);
-					}
-					dispose();
+					}					
+					System.exit(0);
 				}
 			}
 		});
@@ -183,10 +202,10 @@ public class Main extends JFrame {
 		panel.setBorder(null);
 		contentPane.add(panel);
 		panel.setLayout(new GridLayout(0, 1, 0, 0));
-		
+
 		JScrollPane scrollPane = new JScrollPane();
 		panel.add(scrollPane);
-		
+
 		tblMeasurements = new JTable();
 		scrollPane.setViewportView(tblMeasurements);
 
@@ -603,5 +622,17 @@ public class Main extends JFrame {
 		sqlStatement += " Force <= " + spnMaxForce.getValue();
 
 		return sqlStatement;
+	}
+	
+	private void initialDatabaseSetup() throws SQLException {
+		String sqlCreationStatement = "CREATE TABLE [Measurements] (" +
+									   "[Blade] INTEGER(20) NOT NULL," +
+									  "[VGID] INTEGER(3)," + 
+									  "[DateTime] DATETIME," + 
+									  "[Hum] DECIMAL(20, 2)," + 
+									  "[Temp] DECIMAL(20, 2)," + 
+									  "[Force] DECIMAL(20, 2))";
+		
+		connector.executeUpdateQuery(sqlCreationStatement);
 	}
 }

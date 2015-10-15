@@ -1,5 +1,6 @@
 package utilities;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -43,7 +44,10 @@ public class SqlConnector implements AutoCloseable {
 	
 	public void connectToDatabase() throws SQLException{
 		try{
-			conn = DriverManager.getConnection("jdbc:sqlite:lib/" + databaseName,"","");
+			String userHome = System.getProperty("user.home");
+			String outputFolder = userHome + File.separator + "VG Statistics";
+			conn = DriverManager.getConnection("jdbc:sqlite:" + outputFolder + File.separator + databaseName,"","");
+//			conn = DriverManager.getConnection("jdbc:sqlite:lib/" + databaseName,"","");
 		} catch(SQLException e){
 			throw e;
 		}
