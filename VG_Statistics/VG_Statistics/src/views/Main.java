@@ -196,6 +196,12 @@ public class Main extends JFrame {
 		mntmExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_MASK));
 
 		mnImport.add(mntmExit);
+		
+		JMenu mnTools = new JMenu("Tools");
+		menuBar.add(mnTools);
+		
+		JMenuItem mntmDatabaseProperties = new JMenuItem("Database Properties");
+		mnTools.add(mntmDatabaseProperties);
 
 		panel = new JPanel();
 		panel.setBounds(10, 208, 592, 312);
