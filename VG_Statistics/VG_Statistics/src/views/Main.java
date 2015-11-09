@@ -54,6 +54,7 @@ import com.toedter.calendar.JDateChooser;
 
 import utilities.MyTools;
 import utilities.SqlConnector;
+import java.awt.Color;
 
 public class Main extends JFrame {
 
@@ -235,7 +236,7 @@ public class Main extends JFrame {
 
 		lblBladeId = new JLabel("Blade ID");
 		lblBladeId.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblBladeId.setBounds(10, 32, 99, 14);
+		lblBladeId.setBounds(62, 33, 47, 14);
 		contentPane.add(lblBladeId);
 
 		JButton btnExit = new JButton("Exit");
@@ -433,22 +434,22 @@ public class Main extends JFrame {
 		contentPane.add(lblVg);
 
 		JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new TitledBorder(null, "Plots", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_1.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Graphs", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		panel_1.setBounds(457, 32, 142, 121);
 		contentPane.add(panel_1);
 		panel_1.setLayout(null);
 
-		JButton btnTimeHumPlot = new JButton("Time/Humidity");
+		JButton btnTimeHumPlot = new JButton("Humidity / Time");
 
 		btnTimeHumPlot.setBounds(10, 21, 123, 23);
 		panel_1.add(btnTimeHumPlot);
 
-		JButton btnTimetemperature = new JButton("Time/Temperature");
+		JButton btnTimetemperature = new JButton("Temp. / Time");
 
 		btnTimetemperature.setBounds(10, 52, 123, 23);
 		panel_1.add(btnTimetemperature);
 
-		JButton btnTimeforce = new JButton("Time/Force");
+		JButton btnTimeforce = new JButton("Force / Time");
 
 		btnTimeforce.setBounds(10, 86, 123, 23);
 		panel_1.add(btnTimeforce);
@@ -457,37 +458,6 @@ public class Main extends JFrame {
 
 		btnSearch.addActionListener(event -> {
 			String sqlSelectStatement = "Select * from Measurements Where " + getSQLFromFrame();
-
-			// if (cmbBlades.getSelectedIndex() != 0) {
-			// sqlSelectStatement += " Blade = '" +
-			// String.valueOf(cmbBlades.getSelectedItem()) + "' and ";
-			// }
-			//
-			// if (cmbVGs.getSelectedIndex() != 0) {
-			// sqlSelectStatement += " VGID = '" +
-			// String.valueOf(cmbVGs.getSelectedItem()) + "' and ";
-			// }
-			//
-			// String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd
-			// HH:mm:ss").format(dChooserFrom.getDate());
-			// String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd
-			// HH:mm:ss").format(dChooserTo.getDate());
-			// sqlSelectStatement += " DateTime >= '" + sqlDateFrom + "' and ";
-			// sqlSelectStatement += " DateTime <= '" + sqlDateTo + "' and ";
-			//
-			// sqlSelectStatement += " Hum >= " + spnMinHum.getValue() + " and
-			// ";
-			// sqlSelectStatement += " Hum <= " + spnMaxHum.getValue() + " and
-			// ";
-			//
-			// sqlSelectStatement += " Temp >= " + spnMinTemp.getValue() + " and
-			// ";
-			// sqlSelectStatement += " Temp <= " + spnMaxTemp.getValue() + " and
-			// ";
-			//
-			// sqlSelectStatement += " Force >= " + spnMinForce.getValue() + "
-			// and ";
-			// sqlSelectStatement += " Force <= " + spnMaxForce.getValue();
 
 			try {
 				ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
@@ -502,8 +472,8 @@ public class Main extends JFrame {
 		});
 
 		btnTimeHumPlot.addActionListener(event -> {
-			String query = "Select DateTime, Hum from Measurements";
-			String axisTitles = "Time/Humidity";
+			String query = "Select substr(DateTime, 11 ,9), Hum from Measurements Where" + getSQLFromFrame();
+			String axisTitles = "Humidity / Time";
 			String xTitle = "Time";
 			String yTitle = "Humidity";
 
@@ -511,8 +481,8 @@ public class Main extends JFrame {
 		});
 
 		btnTimetemperature.addActionListener(event -> {
-			String query = "Select Time(DateTime), Temp from Measurements";
-			String axisTitles = "Time/Temperature";
+			String query = "Select substr(DateTime, 11 ,9), Temp from Measurements Where" + getSQLFromFrame();
+			String axisTitles = "Temperature / Time";
 			String xTitle = "Time";
 			String yTitle = "Temperature";
 
@@ -520,8 +490,8 @@ public class Main extends JFrame {
 		});
 
 		btnTimeforce.addActionListener(event -> {
-			String query = "Select Time(DateTime), Force from Measurements Where" + getSQLFromFrame();
-			String axisTitles = "Time/Force";
+			String query = "Select substr(DateTime, 11 ,9), Force from Measurements Where" + getSQLFromFrame();
+			String axisTitles = "Force / Time";
 			String xTitle = "Time";
 			String yTitle = "Force";
 
@@ -596,7 +566,7 @@ public class Main extends JFrame {
 
 		ChartFrame cFrame = new ChartFrame(axisTitles, jChart);
 		cFrame.setVisible(true);
-		cFrame.setSize(800, 450);
+		cFrame.setSize(1200, 850);
 
 		// PlotFrm pFrm = new PlotFrm(jChart);
 		// pFrm.setVisible(true);

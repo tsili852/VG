@@ -33,6 +33,7 @@ public class Uploader {
 			String line = null;
 			
 			while ((line = br.readLine()) != null) {
+				
 				newMeas.clearAllValues();
 				
 				String[] values = line.split(";");
@@ -44,11 +45,13 @@ public class Uploader {
 				newMeas.setMesHumidity(Double.parseDouble(values[3]));
 				newMeas.setMesForce(Double.parseDouble(values[4]));
 				
-				String sqlStatement = "Insert Into Measurements (Blade, VGID, DateTime, Hum, Temp, Force) Values "
-						+ "('" + newMeas.getBlade() + "', '" + newMeas.getVGID()+ "', '" + newMeas.getMesDate() + "', " + newMeas.getMesHumidity() + ", " + newMeas.getMesTemperature()
-						+ ", " + newMeas.getMesForce() + ")";
-				propConnector.executeUpdateQuery(sqlStatement);
-				mesCounter++;
+				if (newMeas.getMesForce() > 0) {
+					String sqlStatement = "Insert Into Measurements (Blade, VGID, DateTime, Hum, Temp, Force) Values "
+							+ "('" + newMeas.getBlade() + "', '" + newMeas.getVGID()+ "', '" + newMeas.getMesDate() + "', " + newMeas.getMesHumidity() + ", " + newMeas.getMesTemperature()
+							+ ", " + newMeas.getMesForce() + ")";
+					propConnector.executeUpdateQuery(sqlStatement);
+					mesCounter++;
+				}
 				
 			}
 			
