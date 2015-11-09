@@ -27,12 +27,22 @@ public class Uploader {
 		@SuppressWarnings("resource")
 		SqlConnector propConnector = new SqlConnector("VG_db");
 		propConnector.connectToDatabase();
+		int tempVG = 0;
 		
 		try {
 			BufferedReader br =  new BufferedReader(new FileReader(selectedFile));
+			BufferedReader br2 =  new BufferedReader(new FileReader(selectedFile));
 			String line = null;
+			String nextLine = null;
+			br2.readLine();
+			int nextVG = 0;
 			
 			while ((line = br.readLine()) != null) {
+				
+				if ((nextLine = br2.readLine()) != null) {
+					String[] nextValues = nextLine.split(";");
+					nextVG = Integer.parseInt(nextValues[0]);
+				}
 				
 				newMeas.clearAllValues();
 				
@@ -45,14 +55,15 @@ public class Uploader {
 				newMeas.setMesHumidity(Double.parseDouble(values[3]));
 				newMeas.setMesForce(Double.parseDouble(values[4]));
 				
-				if (newMeas.getMesForce() > 0) {
+				if (newMeas.getMesForce() > 0 || tempVG != newMeas.getVGID() || 
+						(nextVG != newMeas.getVGID() || nextLine == null)) {
 					String sqlStatement = "Insert Into Measurements (Blade, VGID, DateTime, Hum, Temp, Force) Values "
 							+ "('" + newMeas.getBlade() + "', '" + newMeas.getVGID()+ "', '" + newMeas.getMesDate() + "', " + newMeas.getMesHumidity() + ", " + newMeas.getMesTemperature()
 							+ ", " + newMeas.getMesForce() + ")";
 					propConnector.executeUpdateQuery(sqlStatement);
 					mesCounter++;
+					tempVG = newMeas.getVGID();
 				}
-				
 			}
 			
 			br.close();
