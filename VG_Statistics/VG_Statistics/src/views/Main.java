@@ -110,13 +110,14 @@ public class Main extends JFrame {
 					connector.connectToDatabase();
 					initialDatabaseSetup();
 				} catch (SQLException e1) {
-					JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e1.getMessage(),
-							"Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(rootPane,
+							"Could not connect to database Error code: " + e1.getMessage(), "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
-				
+
 			}
 		}
-		
+
 		try {
 			connector.connectToDatabase();
 		} catch (SQLException e1) {
@@ -165,7 +166,7 @@ public class Main extends JFrame {
 						JOptionPane.showMessageDialog(rootPane,
 								"Could not connect to database Error code: " + e.getMessage(), "Error",
 								JOptionPane.ERROR_MESSAGE);
-					}					
+					}
 					System.exit(0);
 				}
 			}
@@ -197,10 +198,10 @@ public class Main extends JFrame {
 		mntmExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_MASK));
 
 		mnImport.add(mntmExit);
-		
+
 		JMenu mnTools = new JMenu("Tools");
 		menuBar.add(mnTools);
-		
+
 		JMenuItem mntmDatabaseProperties = new JMenuItem("Database Properties");
 		mnTools.add(mntmDatabaseProperties);
 
@@ -434,7 +435,8 @@ public class Main extends JFrame {
 		contentPane.add(lblVg);
 
 		JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Graphs", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panel_1.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Graphs", TitledBorder.LEADING,
+				TitledBorder.TOP, null, new Color(0, 0, 0)));
 		panel_1.setBounds(457, 32, 142, 121);
 		contentPane.add(panel_1);
 		panel_1.setLayout(null);
@@ -499,9 +501,18 @@ public class Main extends JFrame {
 		});
 
 		mntmFromSdCard.addActionListener(event -> {
-			Import frmImport = new Import();
-			frmImport.setModal(true);
-			frmImport.setVisible(true);
+			try {
+				connector.closeConnection();
+
+				Import frmImport = new Import();
+				frmImport.setModal(true);
+				frmImport.setVisible(true);
+
+				connector.connectToDatabase();
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),
+						"Error", JOptionPane.ERROR_MESSAGE);
+			}
 		});
 
 		btnImportFromSD.addActionListener(event -> {
@@ -599,16 +610,12 @@ public class Main extends JFrame {
 
 		return sqlStatement;
 	}
-	
+
 	private void initialDatabaseSetup() throws SQLException {
-		String sqlCreationStatement = "CREATE TABLE [Measurements] (" +
-									   "[Blade] INTEGER(20) NOT NULL," +
-									  "[VGID] INTEGER(3)," + 
-									  "[DateTime] DATETIME," + 
-									  "[Hum] DECIMAL(20, 2)," + 
-									  "[Temp] DECIMAL(20, 2)," + 
-									  "[Force] DECIMAL(20, 2))";
-		
+		String sqlCreationStatement = "CREATE TABLE [Measurements] (" + "[Blade] INTEGER(20) NOT NULL,"
+				+ "[VGID] INTEGER(3)," + "[DateTime] DATETIME," + "[Hum] DECIMAL(20, 2)," + "[Temp] DECIMAL(20, 2),"
+				+ "[Force] DECIMAL(20, 2))";
+
 		connector.executeUpdateQuery(sqlCreationStatement);
 	}
 }
