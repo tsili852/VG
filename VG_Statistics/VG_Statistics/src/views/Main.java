@@ -199,12 +199,6 @@ public class Main extends JFrame {
 
 		mnImport.add(mntmExit);
 
-		JMenu mnTools = new JMenu("Tools");
-		menuBar.add(mnTools);
-
-		JMenuItem mntmDatabaseProperties = new JMenuItem("Database Properties");
-		mnTools.add(mntmDatabaseProperties);
-
 		panel = new JPanel();
 		panel.setBounds(10, 208, 592, 312);
 		panel.setBorder(null);
