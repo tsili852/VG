@@ -1,42 +1,50 @@
 package views;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.JLabel;
 import java.awt.Font;
+import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 import java.util.Vector;
 
-import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JList;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
+import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.jdbc.JDBCCategoryDataset;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.labels.ItemLabelAnchor;
+import org.jfree.chart.labels.ItemLabelPosition;
+import org.jfree.chart.labels.StandardXYItemLabelGenerator;
+import org.jfree.chart.labels.XYItemLabelGenerator;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.jdbc.JDBCXYDataset;
+import org.jfree.ui.ApplicationFrame;
+import org.jfree.ui.TextAnchor;
 
 import utilities.SqlConnector;
-
-import javax.swing.ListSelectionModel;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.ActionEvent;
-import javax.swing.JScrollPane;
-import java.awt.Component;
 
 public class ComparisonFrm extends JDialog {
 
@@ -53,6 +61,7 @@ public class ComparisonFrm extends JDialog {
 	private JButton btnRemove;
 	private JButton btnAdd;
 	private JComboBox<String> cmbVGs;
+	private int tableRows = 0;
 
 	/**
 	 * Launch the application.
@@ -223,52 +232,39 @@ public class ComparisonFrm extends JDialog {
 							JOptionPane.ERROR_MESSAGE);
 				} else {
 					int nRow = model.getRowCount(), nCol = model.getColumnCount();
+					tableRows = nRow;
 					Object[][] tableData = new Object[nRow][nCol];
 					for (int i = 0; i < nRow; i++)
 						for (int j = 0; j < nCol; j++)
 							tableData[i][j] = model.getValueAt(i, j);
 
-					JFreeChart jChart = null;
-					String sqlStatement = null;
-					String axisTitles = null;
-					String xTitle = null;
-					String yTitle = null;
-					if (cmbCompType.getSelectedIndex() == 1) {
-						sqlStatement = "Select substr(DateTime, 11 ,9), Force from Measurements Where ";
+					String query = "";
+					String axisTitles = "";
+					String xTitle = "";
+					String yTitle = "";
+					String sqlBladeID = (String) tableData[0][0];
+					String sqlVGID = (String) tableData[0][1];
+
+					if (cmbCompType.getSelectedIndex() == 0) {
+						// query = "Select substr(DateTime, 11 ,9) as Time,
+						// Force from Measurements Where Blade = ";
+						query = "Select (select count(*) from Measurements b  where a.DateTime >= b.DateTime and Blade = "
+								+ sqlBladeID + " and VGID = " + sqlVGID + "),"
+								+ "Force from Measurements a Where Blade = ";
+
 						axisTitles = "Force / Time";
 						xTitle = "Time";
 						yTitle = "Force";
 					}
-					if (cmbCompType.getSelectedIndex() == 2) {
-						sqlStatement = "Select substr(DateTime, 11 ,9), Hum from Measurements Where ";
-						axisTitles = "Humidity / Time";
-						xTitle = "Time";
-						yTitle = "Humidity";
-					}
-					if (cmbCompType.getSelectedIndex() == 3) {
-						sqlStatement = "Select substr(DateTime, 11 ,9), Temp from Measurements Where ";
-						axisTitles = "Temperature / Time";
-						xTitle = "Time";
-						yTitle = "Temperature";
-					}
-					jChart = ChartFactory.createLineChart(axisTitles, xTitle, yTitle, null, PlotOrientation.VERTICAL,
-							false, true, true);
-					int datasetIndex = 0;
-					for (int i = 0; i < nRow; i++) {
-						String updatedSqlStatement = sqlStatement + "Blade = " + tableData[i][0] + " and VGID = "
-								+ tableData[i][1];
-						JDBCCategoryDataset dataset = null;
-						try {
-							dataset = new JDBCCategoryDataset(connector.getConnection(), updatedSqlStatement);
-						} catch (SQLException ex) {
-							ex.printStackTrace();
+					try {
+						if (connector.isConnectionOpen()) {
+							connector.closeConnection();
 						}
-
-						jChart.setd
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
 					}
-					ChartFrame cFrame = new ChartFrame(axisTitles, jChart);
-					cFrame.setVisible(true);
-					cFrame.setSize(1200, 850);
+					formGraph(tableData, axisTitles, xTitle, yTitle, query);
 				}
 			}
 		});
@@ -308,5 +304,70 @@ public class ComparisonFrm extends JDialog {
 
 		cancelButton.setActionCommand("Cancel");
 		buttonPane.add(cancelButton);
+	}
+
+	private void formGraph(Object[][] tableData, String axisTitles, String xTitle, String yTitle, String query) {
+		XYPlot plot;
+		int datasetIndex = 0;
+		SqlConnector connector = new SqlConnector("VG_db");
+		try {
+			connector.connectToDatabase();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		String updatedQuery = query + tableData[0][0] + " and VGID = " + tableData[0][1];
+
+		JDBCXYDataset dataset = null;
+		try {
+			dataset = new JDBCXYDataset(connector.getConnection(), updatedQuery);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		JFreeChart jChart = ChartFactory.createTimeSeriesChart(axisTitles, xTitle, yTitle, dataset, false, true, true);
+
+		jChart.setBackgroundPaint(Color.white);
+		plot = jChart.getXYPlot();
+		plot.setBackgroundPaint(Color.white);
+		plot.setDomainGridlinePaint(Color.lightGray);
+		plot.setRangeGridlinePaint(Color.lightGray);
+
+		final ValueAxis axis = plot.getDomainAxis();
+		axis.setAutoRange(true);
+
+		final NumberAxis rangeAxis2 = new NumberAxis("Range Axis 2");
+		rangeAxis2.setAutoRangeIncludesZero(false);
+
+		final JPanel content = new JPanel(new BorderLayout());
+
+		final ChartPanel chartPanel = new ChartPanel(jChart);
+		content.add(chartPanel);
+
+		ApplicationFrame Frm = new ApplicationFrame(axisTitles);
+		
+		chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+
+		Frm.setContentPane(content);
+		Frm.setVisible(true);
+		Frm.setSize(1200, 850);
+
+		for (int i = 1; i < tableRows; i++) {
+			datasetIndex++;
+			String sqlBladeID = (String) tableData[i][0];
+			String sqlVGID = (String) tableData[i][1];
+			query = "Select (select count(*) from Measurements b  where a.DateTime >= b.DateTime and Blade = "
+					+ sqlBladeID + " and VGID = " + sqlVGID + ")," + "Force from Measurements a Where Blade = ";
+			updatedQuery = query + tableData[i][0] + " and VGID = " + tableData[i][1];
+			try {
+				dataset = new JDBCXYDataset(connector.getConnection(), updatedQuery);			
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			plot.setDataset(datasetIndex, dataset);
+			plot.setRenderer(datasetIndex, new StandardXYItemRenderer());
+		}
 	}
 }
