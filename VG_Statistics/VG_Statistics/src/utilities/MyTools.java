@@ -17,9 +17,9 @@ public class MyTools {
 	    columnNames.add("Blade ID");
 	    columnNames.add("VG ID");
 	    columnNames.add("Date and Time");
-	    columnNames.add("Humidity");
-	    columnNames.add("Temperature");
-	    columnNames.add("Force");
+	    columnNames.add("Humidity (%)");
+	    columnNames.add("Temperature (C°)");
+	    columnNames.add("Force (Kg)");
 
 	    // Get all rows.
 	    Vector<Vector<Object>> rows = new Vector<Vector<Object>>();

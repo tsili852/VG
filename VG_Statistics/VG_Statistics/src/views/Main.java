@@ -55,6 +55,9 @@ import com.toedter.calendar.JDateChooser;
 import utilities.MyTools;
 import utilities.SqlConnector;
 import java.awt.Color;
+import javax.swing.border.BevelBorder;
+import javax.swing.JTextField;
+import javax.swing.border.CompoundBorder;
 
 public class Main extends JFrame {
 
@@ -172,7 +175,7 @@ public class Main extends JFrame {
 			}
 		});
 
-		setBounds(100, 100, 628, 570);
+		setBounds(100, 100, 628, 707);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -200,7 +203,7 @@ public class Main extends JFrame {
 		mnImport.add(mntmExit);
 
 		panel = new JPanel();
-		panel.setBounds(10, 208, 592, 312);
+		panel.setBounds(10, 232, 592, 425);
 		panel.setBorder(null);
 		contentPane.add(panel);
 		panel.setLayout(new GridLayout(0, 1, 0, 0));
@@ -264,9 +267,9 @@ public class Main extends JFrame {
 		lblDateTo.setBounds(349, 33, 99, 14);
 		contentPane.add(lblDateTo);
 
-		lblHumidity = new JLabel("Humidity");
+		lblHumidity = new JLabel("Humidity (%)");
 		lblHumidity.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblHumidity.setBounds(62, 109, 47, 18);
+		lblHumidity.setBounds(33, 109, 76, 18);
 		contentPane.add(lblHumidity);
 		PlainDocument humMindoc = new PlainDocument();
 		humMindoc.setDocumentFilter(new DocumentFilter() {
@@ -311,9 +314,9 @@ public class Main extends JFrame {
 			}
 		});
 
-		JLabel lblTemperature = new JLabel("Temperature");
+		JLabel lblTemperature = new JLabel("Temperature (C\u00B0)");
 		lblTemperature.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblTemperature.setBounds(37, 138, 72, 18);
+		lblTemperature.setBounds(10, 138, 99, 18);
 		contentPane.add(lblTemperature);
 		PlainDocument tempMinDoc = new PlainDocument();
 		tempMinDoc.setDocumentFilter(new DocumentFilter() {
@@ -348,9 +351,9 @@ public class Main extends JFrame {
 			}
 		});
 
-		JLabel lblForce = new JLabel("Force");
+		JLabel lblForce = new JLabel("Force (Kg)");
 		lblForce.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblForce.setBounds(76, 165, 33, 18);
+		lblForce.setBounds(51, 165, 58, 18);
 		contentPane.add(lblForce);
 
 		JButton btnSearch = new JButton("Search");
@@ -398,7 +401,7 @@ public class Main extends JFrame {
 		spnMaxForce.setValue(100);
 
 		btnImportFromSD = new JButton("Import from SD card");
-		btnImportFromSD.setBounds(457, 164, 142, 23);
+		btnImportFromSD.setBounds(10, 203, 142, 23);
 
 		contentPane.add(btnImportFromSD);
 
@@ -449,15 +452,79 @@ public class Main extends JFrame {
 
 		btnTimeforce.setBounds(10, 86, 123, 23);
 		panel_1.add(btnTimeforce);
+		
+		resultsPanel = new JPanel();
+		resultsPanel.setBorder(new CompoundBorder());
+		resultsPanel.setBounds(205, 203, 171, 28);
+		resultsPanel.setVisible(false);
+		contentPane.add(resultsPanel);
+		resultsPanel.setLayout(null);
+		
+		JLabel lblResults = new JLabel("Results :");
+		lblResults.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblResults.setBounds(11, 5, 52, 18);
+		resultsPanel.add(lblResults);
+		
+		txtResultNumber = new JTextField();
+		txtResultNumber.setHorizontalAlignment(SwingConstants.CENTER);
+		txtResultNumber.setEditable(false);
+		txtResultNumber.setBounds(73, 5, 72, 20);
+		resultsPanel.add(txtResultNumber);
+		txtResultNumber.setColumns(10);
+		
+		lblNoResults = new JLabel("We could find any Measurements");
+		lblNoResults.setForeground(Color.RED);
+		lblNoResults.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblNoResults.setBounds(415, 208, 190, 18);
+		lblNoResults.setVisible(false);
+		contentPane.add(lblNoResults);
+		
+		JButton btnComparison = new JButton("Comparison Graphs");
+		btnComparison.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					connector.closeConnection();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				ComparisonFrm frmCompare = new ComparisonFrm();
+				frmCompare.setModal(true);
+				frmCompare.setVisible(true);
+
+				try {
+					connector.connectToDatabase();
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e1.getMessage(),
+							"Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		btnComparison.setBounds(457, 164, 142, 23);
+		contentPane.add(btnComparison);
 
 		/* All the Event Listeners */
 
 		btnSearch.addActionListener(event -> {
+			
+			String sqlCount = "Select count(*) as rows from Measurements Where " + getSQLFromFrame();
 			String sqlSelectStatement = "Select * from Measurements Where " + getSQLFromFrame();
 
 			try {
-				ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
-				tblMeasurements.setModel(MyTools.resultSetToTableModel(result));
+				ResultSet resultCount = connector.executeResultSetQuery(sqlCount);
+				txtResultNumber.setText(String.valueOf(resultCount.getInt("rows")));
+				
+				if (resultCount.getInt("rows") > 0) {
+					ResultSet result = connector.executeResultSetQuery(sqlSelectStatement);
+					tblMeasurements.setModel(MyTools.resultSetToTableModel(result));
+					resultsPanel.setVisible(true);
+					lblNoResults.setVisible(false);
+					tblMeasurements.setVisible(true);
+				} else {
+					resultsPanel.setVisible(false);
+					lblNoResults.setVisible(true);
+					tblMeasurements.setVisible(false);
+				}
+				
 
 			} catch (SQLException e) {
 				JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),
@@ -503,6 +570,20 @@ public class Main extends JFrame {
 				frmImport.setVisible(true);
 
 				connector.connectToDatabase();
+				
+				cmbBlades.removeAllItems();
+				String sqlStatement = "Select distinct Blade from Measurements";
+				ResultSet rsBlades2 = null;
+				try {
+					rsBlades2 = connector.executeResultSetQuery(sqlStatement);
+					cmbBlades.addItem("All Blades");
+					while (rsBlades2.next()) {
+						cmbBlades.addItem(rsBlades2.getString(1));
+					}
+				} catch (SQLException e) {
+					JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),
+							"Error", JOptionPane.ERROR_MESSAGE);
+				}
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(rootPane, "Could not connect to database Error code: " + e.getMessage(),
 						"Error", JOptionPane.ERROR_MESSAGE);
@@ -555,6 +636,9 @@ public class Main extends JFrame {
 	private JSpinner spnMaxHum;
 	private JTable tblMeasurements;
 	private JMenuBar menuBar;
+	private JPanel resultsPanel;
+	private JTextField txtResultNumber;
+	private JLabel lblNoResults;
 
 	/* Other methods */
 
@@ -589,7 +673,8 @@ public class Main extends JFrame {
 		}
 
 		String sqlDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserFrom.getDate());
-		String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
+//		String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dChooserTo.getDate());
+		String sqlDateTo = new SimpleDateFormat("yyyy-MM-dd 23:59:59").format(dChooserTo.getDate());
 		sqlStatement += " DateTime >= '" + sqlDateFrom + "' and ";
 		sqlStatement += " DateTime <= '" + sqlDateTo + "' and ";
 

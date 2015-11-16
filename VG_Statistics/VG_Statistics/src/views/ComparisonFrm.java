@@ -1,16 +1,14 @@
 package views;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
@@ -29,20 +27,15 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartFrame;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.labels.ItemLabelAnchor;
-import org.jfree.chart.labels.ItemLabelPosition;
-import org.jfree.chart.labels.StandardXYItemLabelGenerator;
-import org.jfree.chart.labels.XYItemLabelGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.jdbc.JDBCXYDataset;
 import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.TextAnchor;
 
 import utilities.SqlConnector;
 
@@ -64,19 +57,6 @@ public class ComparisonFrm extends JDialog {
 	private int tableRows = 0;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			ComparisonFrm dialog = new ComparisonFrm();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
 	public ComparisonFrm() {
@@ -92,7 +72,6 @@ public class ComparisonFrm extends JDialog {
 			e.printStackTrace();
 		}
 
-		@SuppressWarnings("resource")
 		SqlConnector connector = new SqlConnector("VG_db");
 
 		setTitle("Comparison Graph");
@@ -153,9 +132,37 @@ public class ComparisonFrm extends JDialog {
 
 		cmbVGs = new JComboBox<String>();
 		cmbVGs.setBounds(124, 73, 142, 21);
+		
+		String sqlStatement = "Select distinct VGID from Measurements Where Blade = "
+				+ cmbBlades.getItemAt(0);
+		ResultSet rsVgs = null;
+		try {
+			connector.connectToDatabase();
+			rsVgs = connector.executeResultSetQuery(sqlStatement);
+			while (rsVgs.next()) {
+				cmbVGs.addItem(rsVgs.getString(1));
+			}
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(rootPane,
+					"Could not connect to database Error code: " + e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+		} finally {
+			try {
+				if (connector.isConnectionOpen()) {
+					connector.closeConnection();
+				}
+			} catch (SQLException e) {
+				JOptionPane.showMessageDialog(rootPane,
+						"Could not connect to database Error code: " + e.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
+			}
+		}
 		cmbBlades.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				cmbVGs.removeAll();
+				
+				ArrayList<String> vgList = new ArrayList<String>();
+				int counter = 0;
+//				cmbVGs.removeAll();
 				String sqlStatement2 = "Select distinct VGID from Measurements Where Blade = "
 						+ cmbBlades.getSelectedItem();
 				ResultSet rsVgs = null;
@@ -163,8 +170,13 @@ public class ComparisonFrm extends JDialog {
 					connector.connectToDatabase();
 					rsVgs = connector.executeResultSetQuery(sqlStatement2);
 					while (rsVgs.next()) {
-						cmbVGs.addItem(rsVgs.getString(1));
+//						cmbVGs.addItem(rsVgs.getString(1));
+						vgList.add(rsVgs.getString(1));
 					}
+					String[] VGs = new String[vgList.size()];
+					VGs = vgList.toArray(VGs);
+					DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(VGs);
+					cmbVGs.setModel(model);
 				} catch (SQLException e) {
 					JOptionPane.showMessageDialog(rootPane,
 							"Could not connect to database Error code: " + e.getMessage(), "Error",
@@ -265,7 +277,9 @@ public class ComparisonFrm extends JDialog {
 						e1.printStackTrace();
 					}
 					formGraph(tableData, axisTitles, xTitle, yTitle, query);
+					dispose();
 				}
+				
 			}
 		});
 		btnShowGraph.setActionCommand("OK");
@@ -309,6 +323,7 @@ public class ComparisonFrm extends JDialog {
 	private void formGraph(Object[][] tableData, String axisTitles, String xTitle, String yTitle, String query) {
 		XYPlot plot;
 		int datasetIndex = 0;
+		@SuppressWarnings("resource")
 		SqlConnector connector = new SqlConnector("VG_db");
 		try {
 			connector.connectToDatabase();
@@ -345,12 +360,15 @@ public class ComparisonFrm extends JDialog {
 		final ChartPanel chartPanel = new ChartPanel(jChart);
 		content.add(chartPanel);
 
-		ApplicationFrame Frm = new ApplicationFrame(axisTitles);
-		
-		chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+		ChartFrame Frm = new ChartFrame(axisTitles, jChart);
+//		ApplicationFrame Frm = new ApplicationFrame(axisTitles);
 
+		chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+		
+//		Frm.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		Frm.setContentPane(content);
 		Frm.setVisible(true);
+		
 		Frm.setSize(1200, 850);
 
 		for (int i = 1; i < tableRows; i++) {
@@ -361,7 +379,7 @@ public class ComparisonFrm extends JDialog {
 					+ sqlBladeID + " and VGID = " + sqlVGID + ")," + "Force from Measurements a Where Blade = ";
 			updatedQuery = query + tableData[i][0] + " and VGID = " + tableData[i][1];
 			try {
-				dataset = new JDBCXYDataset(connector.getConnection(), updatedQuery);			
+				dataset = new JDBCXYDataset(connector.getConnection(), updatedQuery);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
